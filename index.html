@@ -1,191 +1,222 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ZETHOVERSE | One tiny universe. Everyone connected.</title>
-<meta name="description" content="Discover ZETHOVERSE — a new digital universe inspired by interconnectedness, evolution and extraordinary possibilities.">
+<meta name="description" content="Enter ZETHOVERSE: a mysterious journey through the Planck scale, quantum experiments, the unknown and a speculative vision of connection.">
 <style>
 * { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
 body {
   margin: 0;
   font-family: Arial, sans-serif;
   background: #050711;
   color: #eeeaf2;
-  line-height: 1.7;
+  line-height: 1.8;
 }
 header {
-  padding: 25px 8%;
+  padding: 22px 7%;
   display: flex;
   justify-content: space-between;
   align-items: center;
   border-bottom: 1px solid #25253a;
+  background: rgba(5,7,17,.96);
 }
-.logo {
-  color: #d9b765;
-  font-size: 23px;
-  font-weight: bold;
-  letter-spacing: 4px;
-}
-nav a {
-  color: #c5c7d8;
-  text-decoration: none;
-  margin-left: 22px;
-  font-size: 14px;
-}
+.logo { color: #d9b765; font-size: 22px; font-weight: bold; letter-spacing: 4px; }
+nav { display:flex; flex-wrap:wrap; justify-content:center; gap:16px; }
+nav a { color: #c5c7d8; text-decoration: none; font-size: 13px; }
+nav a:hover, a.gold:hover { color:#fff0bd; }
 .hero {
   text-align: center;
-  padding: 115px 20px 105px;
-  background: radial-gradient(ellipse at center, #172342 0%, #080c1b 48%, #050711 78%);
+  padding: 125px 22px 115px;
+  background: radial-gradient(ellipse at 50% 42%, #1a2a4d 0%, #0b1226 42%, #050711 78%);
+  position:relative;
+  overflow:hidden;
 }
+.eyebrow { color:#d9b765; letter-spacing:4px; text-transform:uppercase; font-size:11px; }
 .hero h1 {
   color: #e4c477;
-  font-size: clamp(38px, 7vw, 70px);
-  letter-spacing: 7px;
-  margin-bottom: 12px;
+  font-size: clamp(40px, 8vw, 82px);
+  letter-spacing: 8px;
+  line-height:1.15;
+  margin:22px 0 12px;
+  text-shadow:0 0 35px rgba(217,183,101,.18);
 }
-.hero h2 {
-  font-weight: 300;
-  color: #d9e4ff;
-  font-size: 23px;
-}
-.hero p {
-  max-width: 680px;
-  margin: 25px auto;
-  color: #b9bfd1;
-}
+.hero h2 { font-weight:300; color:#d9e4ff; font-size:clamp(20px,3vw,28px); margin:0; }
+.hero p { max-width:760px; margin:28px auto; color:#c0c7d9; font-size:17px; }
 .button {
-  display: inline-block;
-  margin-top: 20px;
-  padding: 12px 28px;
-  border: 1px solid #d9b765;
-  color: #e4c477;
-  text-decoration: none;
-  letter-spacing: 1px;
+  display:inline-block; margin:12px 7px 0; padding:12px 25px;
+  border:1px solid #d9b765; color:#e4c477; text-decoration:none;
+  letter-spacing:1px; font-size:12px;
 }
-section {
-  max-width: 950px;
-  margin: auto;
-  padding: 65px 25px;
-}
-h3 {
-  color: #dfc176;
-  font-size: 26px;
-  font-weight: 500;
-}
+.button:hover { background:#d9b765; color:#080b16; }
+section { max-width:1000px; margin:auto; padding:75px 26px; }
+.section-kicker { color:#8da9e5; text-transform:uppercase; letter-spacing:3px; font-size:11px; }
+h3 { color:#dfc176; font-size:clamp(25px,4vw,34px); font-weight:500; line-height:1.3; margin:12px 0 20px; }
+h4 { color:#e7d29b; font-size:19px; font-weight:500; margin:0 0 10px; }
+.lead { color:#d6d9e4; font-size:18px; max-width:820px; }
 .card {
-  background: #101526;
-  border: 1px solid #27314b;
-  border-radius: 10px;
-  padding: 25px;
-  margin: 18px 0;
+  background:linear-gradient(145deg,#111a2d,#0b1020);
+  border:1px solid #27314b; border-radius:12px;
+  padding:26px; margin:20px 0;
 }
-.gold { color: #e4c477; }
-.small {
-  color: #969eb3;
-  font-size: 13px;
+.grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:18px; }
+.gold { color:#e4c477; }
+.blue { color:#a9c4ff; }
+.small { color:#969eb3; font-size:13px; }
+.question {
+  text-align:center; padding:65px 24px; margin:25px 0;
+  border-top:1px solid #28324b; border-bottom:1px solid #28324b;
+  color:#e7d29b; font-size:clamp(22px,4vw,34px); font-weight:300;
 }
-footer {
-  border-top: 1px solid #25253a;
-  text-align: center;
-  padding: 30px 20px;
-  color: #969eb3;
-  font-size: 13px;
-}
-@media(max-width:600px) {
-  header { flex-direction: column; gap: 15px; }
-  nav a { margin: 0 7px; }
-  .hero { padding: 80px 18px; }
+a { color:#e4c477; }
+footer { border-top:1px solid #25253a; text-align:center; padding:32px 20px; color:#969eb3; font-size:13px; }
+@media(max-width:700px) {
+  header { flex-direction:column; gap:15px; }
+  nav { gap:10px 14px; }
+  .hero { padding:85px 18px; }
+  .grid { grid-template-columns:1fr; }
+  section { padding:58px 20px; }
 }
 </style>
 </head>
 <body>
-
 <header>
   <div class="logo">ZETHOVERSE</div>
   <nav aria-label="Main navigation">
-<a href="index.html">Home</a>
-<a href="about.html">About</a>
-<a href="litepaper.html">Litepaper</a>
-<a href="roadmap.html">Roadmap</a>
-<a href="partnerships.html">Partnerships</a>
-<a href="faq.html">FAQ</a>
-<a href="disclaimer.html">Legal</a>
-</nav>
+    <a href="index.html">Home</a>
+    <a href="about.html">About</a>
+    <a href="litepaper.html">Litepaper</a>
+    <a href="roadmap.html">Roadmap</a>
+    <a href="partnerships.html">Partnerships</a>
+    <a href="faq.html">FAQ</a>
+    <a href="disclaimer.html">Legal</a>
+  </nav>
 </header>
 
+<main>
 <div class="hero">
-  <div class="small gold" style="letter-spacing:3px;text-transform:uppercase">An independent digital project</div>
+  <div class="eyebrow">A question at the edge of the known</div>
   <h1>ZETHOVERSE</h1>
   <h2>One tiny universe. Everyone connected.</h2>
-  <p>A creative digital project exploring connection, movement, evolution and the possibilities of a connected universe.</p>
-  <div style="display:flex;justify-content:center;gap:12px;flex-wrap:wrap">
-    <a class="button" href="litepaper.html">EXPLORE THE VISION</a>
-    <a class="button" href="roadmap.html">VIEW THE ROADMAP</a>
-  </div>
+  <p>What if the greatest mystery isn't how large the universe is — but how small reality might become before our understanding breaks down?</p>
+  <a class="button" href="#threshold">CROSS THE THRESHOLD</a>
+  <a class="button" href="#experiments">EXPLORE THE EXPERIMENTS</a>
 </div>
 
-<section id="vision">
-  <h3>The idea</h3>
+<section id="threshold">
+  <div class="section-kicker">01 / The scale of the unknown</div>
+  <h3>There is a limit to what we know how to measure.</h3>
+  <p class="lead">Look outward and the universe seems almost without end. Look inward and matter opens into atoms, particles and fields. Follow that journey far enough and we arrive at a remarkable scale: the Planck length.</p>
   <div class="card">
-    <p>ZETHOVERSE begins with an imaginative question: how can something extraordinarily small belong to something vast, connected and full of possibility?</p>
-    <p>The project uses the relationship between the tiny and the seemingly infinite as a creative foundation for exploring digital connection and future experiences. It is imaginative inspiration, not a claim that a new scientific theory has been established.</p>
+    <h4 class="gold">The Planck length</h4>
+    <p style="font-size:clamp(25px,5vw,38px);color:#e4c477;margin:5px 0;">≈ 1.616 × 10<sup>−35</sup> metres</p>
+    <p>The Planck length is calculated from three fundamental constants: the speed of light, the reduced Planck constant and Newton's gravitational constant. It marks a scale where our existing descriptions of quantum physics and gravity are expected to need a deeper, unified account.</p>
+    <p class="small">It is not a confirmed smallest possible length, and science has not established that space is made of tiny indivisible units. It is a signpost at the frontier of theory.</p>
   </div>
+  <p>That distinction is where the mystery begins. We can calculate the scale. We can explore its implications mathematically. But we do not yet have a complete, experimentally confirmed theory describing what reality is like there.</p>
+</section>
+
+<div class="question">If the map of reality ends, what lies beyond the edge of the map?</div>
+
+<section id="science">
+  <div class="section-kicker">02 / The science beneath the mystery</div>
+  <h3>Three ideas. One extraordinary frontier.</h3>
+  <div class="grid">
+    <div class="card">
+      <h4>Quantum physics</h4>
+      <p>At very small scales, nature does not behave like the familiar world of everyday objects. Quantum theory describes probabilities, superposition and entanglement — effects tested repeatedly in laboratories.</p>
+    </div>
+    <div class="card">
+      <h4>Gravity and spacetime</h4>
+      <p>Einstein's general relativity describes gravity as the geometry of spacetime. It works extraordinarily well on large scales, but combining it consistently with quantum theory remains one of physics' great open challenges.</p>
+    </div>
+    <div class="card">
+      <h4>The Planck frontier</h4>
+      <p>When quantum effects and gravity may both become essential, familiar equations are expected to be incomplete. The Planck scale gives physicists a way to identify where a deeper theory may be needed.</p>
+    </div>
+    <div class="card">
+      <h4>The unanswered question</h4>
+      <p>Is spacetime continuous? Does it have a deeper structure? Is there a meaningful notion of distance below the Planck scale? These are open questions, not settled discoveries.</p>
+    </div>
+  </div>
+</section>
+
+<section id="experiments">
+  <div class="section-kicker">03 / Experiments at the edge</div>
+  <h3>How do we investigate something we cannot simply see?</h3>
+  <p class="lead">Scientists do not need to photograph the smallest scales to test nature. They design experiments, measure outcomes with extraordinary precision and compare what happens with what competing theories predict.</p>
+  <div class="card">
+    <h4>Particle accelerators</h4>
+    <p>At facilities such as CERN's Large Hadron Collider, particles are accelerated to high energies and brought into collision. Detectors study the particles and interactions produced. These experiments probe fundamental matter and forces — but they do not directly reach the Planck length.</p>
+  </div>
+  <div class="card">
+    <h4>Quantum interference and entanglement</h4>
+    <p>Experiments with photons, atoms and other quantum systems test how probabilities combine, how interference appears and how entangled systems behave. They test the foundations of quantum mechanics with remarkable precision.</p>
+  </div>
+  <div class="card">
+    <h4>Gravitational-wave observatories</h4>
+    <p>Instruments such as LIGO measure incredibly small changes in distance caused by passing gravitational waves. They reveal violent cosmic events and test general relativity in conditions far beyond ordinary laboratories. They are not microscopes for the Planck scale, but they let us test gravity in new ways.</p>
+  </div>
+  <div class="card">
+    <h4>Thought experiments</h4>
+    <p>Physicists also use carefully constructed thought experiments to expose contradictions or limits in our assumptions. For example: what happens if we try to confine more and more energy into a smaller region? Quantum theory and gravity begin to pull the reasoning in different directions. Such questions help shape research, but a thought experiment is not itself an experimental discovery.</p>
+  </div>
+  <p class="small">These are real research approaches with different aims. None has yet demonstrated a confirmed structure below the Planck length or proved the ZETHOVERSE concept.</p>
+</section>
+
+<div class="question">What if the unknown is not an ending — but an invitation to imagine?</div>
+
+<section id="zeto">
+  <div class="section-kicker">04 / The Zeto idea</div>
+  <h3>A thought at the boundary of the known.</h3>
+  <p class="lead">ZETHOVERSE takes inspiration from the immense contrast between the unimaginably small and the seemingly infinite. At its heart is a speculative idea: could there be a deeper level of reality beyond the scales our current theories can describe?</p>
+  <div class="card">
+    <h4 class="gold">Enter the possibility</h4>
+    <p>We use the name <strong>Zeto</strong> for this imaginative starting point — a creative prompt for exploring scale, connection, emergence and the limits of human understanding.</p>
+    <p>It is not a recognised particle, measured physical object or accepted scientific theory. The project welcomes curiosity while keeping that boundary clear.</p>
+  </div>
+  <p>From a single question, a universe of ideas can unfold: patterns, relationships, networks and connections. The imagery of ZETHOVERSE turns that exploration into a shared creative world.</p>
+</section>
+
+<section id="connection">
+  <div class="section-kicker">05 / One tiny universe</div>
+  <h3>From the smallest question to a connected vision.</h3>
+  <p class="lead">Three luminous centres. Golden connections. A universe that suggests separate points may still belong to one greater pattern.</p>
+  <p>ZETHOVERSE is being imagined as a distinctive, community-driven digital project with a mysterious scientific and cosmic identity. Its first expression is intentionally simple: a memorable idea, a visual world and an invitation to take part.</p>
+  <p>The longer-term ambition is to explore ways people, ideas and digital experiences might connect. Any practical platform, payment function, partnership or wider ecosystem would require real development, resources and independently verifiable progress. These are possibilities, not existing services.</p>
 </section>
 
 <section id="project">
-  <h3>A project taking shape</h3>
+  <div class="section-kicker">06 / A project taking shape</div>
+  <h3>Curiosity first. Claims carefully. Progress in the open.</h3>
   <div class="card">
-    <p>ZETHOVERSE is being developed through a deliberate sequence: establish a distinctive identity, define a meaningful proposition, settle the technical and economic design, and prepare a coordinated public reveal.</p>
-    <p>We aim to communicate clearly about what exists, what is being built and what remains undecided. The project will not present proposed features, partnerships or outcomes as established facts.</p>
-  </div>
-</section>
-
-<section id="coin">
-  <h3>The coin identity</h3>
-  <div class="card">
-    <p>The coin's final name, ticker, artwork and token design are being considered together. They will be presented as one coherent identity when the design and supporting details are approved.</p>
-    <p>Supply, allocation, utility, production blockchain, liquidity and launch arrangements have not been approved for publication. No official ZETHOVERSE coin is currently available to buy.</p>
-    <p class="small">For your safety, rely only on contract addresses and announcements published through this official website. A similar name, ticker, image or social account does not establish an official connection.</p>
-  </div>
-</section>
-
-<section id="principles">
-  <h3>What guides the project</h3>
-  <div class="card">
-    <p><span class="gold">Connection.</span> Explore meaningful links between people, ideas and digital experiences.</p>
-    <p><span class="gold">Curiosity.</span> Stay open to possibilities while distinguishing creative inspiration from established fact.</p>
-    <p><span class="gold">Evolution.</span> Learn, test and improve through measured stages.</p>
-    <p><span class="gold">Transparency.</span> Be clear about decisions, limitations and project status.</p>
-    <p><span class="gold">Responsibility.</span> Consider technical security, costs and applicable requirements before release.</p>
-  </div>
-</section>
-
-<section id="development">
-  <h3>From concept to public reveal</h3>
-  <div class="card">
-    <p>The planned sequence covers the visual identity, the coin's name and artwork, approved tokenomics, contract development and checking, and a coordinated presentation of the completed project.</p>
-    <p>Any public release will be accompanied by authoritative project information, including the official contract address and relevant technical details once confirmed.</p>
-    <p><a class="gold" href="roadmap.html">Read the development roadmap</a> or <a class="gold" href="litepaper.html">explore the litepaper</a>.</p>
+    <p>ZETHOVERSE is at an early concept and research stage. The project is exploring its identity and direction before making technical or economic commitments.</p>
+    <p>The cryptocurrency idea is being considered as a simple, community-driven meme-coin concept with a distinctive story. No official ZETHOVERSE token is currently offered for sale. Its final network, supply, allocation, utility, liquidity and launch arrangements have not been approved.</p>
+    <p>We will distinguish clearly between established science, open scientific questions, imaginative speculation and project plans. No proposed feature, sponsor, partnership or outcome will be presented as already secured.</p>
+    <p><a class="gold" href="litepaper.html">Explore the litepaper</a> · <a class="gold" href="roadmap.html">See the development roadmap</a></p>
   </div>
 </section>
 
 <section id="contact">
-  <h3>Ideas, collaboration and enquiries</h3>
+  <div class="section-kicker">07 / The invitation</div>
+  <h3>The universe is not finished being explored.</h3>
+  <p class="lead">If the questions intrigue you, follow the journey. If you bring scientific, technical, creative or business experience, thoughtful collaboration is welcome.</p>
   <div class="card">
-    <p>ZETHOVERSE welcomes thoughtful enquiries from people with relevant technical, creative, research, business or partnership expertise.</p>
     <p>For general enquiries, corporate partnership proposals and sponsorship enquiries, contact <a class="gold" href="mailto:musket50@hotmail.com">musket50@hotmail.com</a>.</p>
     <p class="small">All discussions are exploratory unless a specific arrangement is formally confirmed.</p>
   </div>
+  <p class="question" style="margin-bottom:0;">One tiny universe. Everyone connected.<br><span class="gold">Where does your curiosity take you?</span></p>
 </section>
+</main>
 
 <footer>
-<p class="gold" style="letter-spacing:3px;font-weight:bold">ZETHOVERSE</p>
-<p>One tiny universe. Everyone connected.</p>
-<p><a href="index.html">Home</a> · <a href="litepaper.html">Litepaper</a> · <a href="roadmap.html">Roadmap</a> · <a href="partnerships.html">Partnerships</a> · <a href="faq.html">FAQ</a> · <a href="disclaimer.html">Legal</a></p>
-<p>© 2026 ZETHOVERSE · Original project materials reserved to the extent protected by applicable law.</p>
-<p class="small">Informational purposes only. No official coin is currently offered for sale. Digital assets involve risk.</p>
+  <p class="gold" style="letter-spacing:3px;font-weight:bold">ZETHOVERSE</p>
+  <p>One tiny universe. Everyone connected.</p>
+  <p><a href="index.html">Home</a> · <a href="litepaper.html">Litepaper</a> · <a href="roadmap.html">Roadmap</a> · <a href="partnerships.html">Partnerships</a> · <a href="faq.html">FAQ</a> · <a href="disclaimer.html">Legal</a></p>
+  <p>© 2026 ZETHOVERSE · Original project materials reserved to the extent protected by applicable law.</p>
+  <p class="small">For informational and creative purposes. Scientific speculation is not established fact. No official coin is currently offered for sale. Digital assets involve risk.</p>
 </footer>
 </body>
 </html>
