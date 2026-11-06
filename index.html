@@ -108,46 +108,86 @@ footer { border-top:1px solid #25253a; text-align:center; padding:32px 20px; col
   <a class="button" href="#experiments">EXPLORE THE EXPERIMENTS</a>
 </div>
 
-<div class="cosmic-art" style="position:relative;max-width:1200px;margin:0 auto;padding:12px 20px 30px;background:radial-gradient(ellipse at 50% 48%,#101b35 0%,#050711 72%);">
-  <svg viewBox="0 0 1200 430" role="img" aria-label="Artistic visualization of the cosmic web: luminous galaxy clusters connected by blue and gold filaments around vast dark voids" style="display:block;width:100%;height:auto;max-height:430px;">
+<div class="cosmic-art" style="position:relative;max-width:1400px;margin:0 auto;padding:8px 12px 30px;background:#03050c;overflow:hidden;">
+  <svg viewBox="0 0 1400 620" role="img" aria-label="A three-dimensional golden cosmic spider web connecting brilliant galaxy clusters across deep space" style="display:block;width:100%;height:auto;max-height:620px;">
     <defs>
-      <radialGradient id="webGlow"><stop offset="0" stop-color="#f4d58a" stop-opacity=".95"/><stop offset=".22" stop-color="#82baff" stop-opacity=".55"/><stop offset="1" stop-color="#82baff" stop-opacity="0"/></radialGradient>
-      <linearGradient id="webLine" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#d8b96e" stop-opacity=".08"/><stop offset=".48" stop-color="#6ba8ef" stop-opacity=".72"/><stop offset="1" stop-color="#d8b96e" stop-opacity=".12"/></linearGradient>
-      <filter id="webBlur"><feGaussianBlur stdDeviation="5"/></filter>
+      <radialGradient id="spaceBg"><stop offset="0" stop-color="#11182a"/><stop offset=".58" stop-color="#070b17"/><stop offset="1" stop-color="#02040a"/></radialGradient>
+      <radialGradient id="goldNode"><stop offset="0" stop-color="#fff9d8"/><stop offset=".12" stop-color="#ffe9a0"/><stop offset=".34" stop-color="#e9ae42" stop-opacity=".9"/><stop offset="1" stop-color="#b87920" stop-opacity="0"/></radialGradient>
+      <linearGradient id="goldFilament" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#8d5b1c" stop-opacity=".12"/><stop offset=".28" stop-color="#e8b957" stop-opacity=".85"/><stop offset=".52" stop-color="#fff0b3"/><stop offset=".76" stop-color="#d69a37" stop-opacity=".78"/><stop offset="1" stop-color="#8d5b1c" stop-opacity=".12"/></linearGradient>
+      <linearGradient id="depthFilament" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#f8d98a" stop-opacity=".08"/><stop offset=".5" stop-color="#d89d3d" stop-opacity=".68"/><stop offset="1" stop-color="#6d481c" stop-opacity=".08"/></linearGradient>
+      <filter id="goldBloom" x="-80%" y="-80%" width="260%" height="260%"><feGaussianBlur stdDeviation="7"/></filter>
+      <filter id="softBloom" x="-80%" y="-80%" width="260%" height="260%"><feGaussianBlur stdDeviation="2.2"/></filter>
+      <filter id="starGlow" x="-200%" y="-200%" width="500%" height="500%"><feGaussianBlur stdDeviation="3"/></filter>
     </defs>
-    <rect width="1200" height="430" fill="#050711"/>
-    <g fill="none" stroke="url(#webLine)" stroke-width="2">
-      <path d="M-30 70 C120 110 140 270 300 220 S460 40 600 150 S790 360 930 230 S1090 80 1230 120"/>
-      <path d="M-20 310 C130 260 180 80 330 130 S500 340 640 280 S810 80 960 110 S1110 310 1230 340"/>
-      <path d="M80 -20 C160 100 260 160 300 220 S350 340 470 450"/>
-      <path d="M300 -20 C360 100 450 180 600 150 S820 40 900 -20"/>
-      <path d="M620 -20 C580 90 610 190 640 280 S760 380 820 450"/>
-      <path d="M920 -20 C850 80 900 170 930 230 S1050 360 1140 450"/>
-      <path d="M-20 180 C180 190 230 350 390 350 S570 220 700 190 S970 180 1220 220"/>
-      <path d="M30 420 C190 300 260 260 390 350 S610 420 760 330 S970 220 1190 40"/>
-      <path d="M120 20 C260 70 400 60 510 160 S690 330 850 300 S1040 180 1160 190" stroke-width="1.2"/>
-      <path d="M40 250 C190 120 360 100 480 190 S690 270 810 170 S1020 40 1180 90" stroke-width="1.2"/>
+    <rect width="1400" height="620" fill="url(#spaceBg)"/>
+    <g fill="#d9e6ff" opacity=".68">
+      <circle cx="66" cy="72" r="1.4"/><circle cx="155" cy="250" r="1"/><circle cx="228" cy="92" r="1.2"/><circle cx="355" cy="40" r="1"/><circle cx="468" cy="170" r="1.2"/><circle cx="585" cy="65" r="1"/><circle cx="720" cy="42" r="1.3"/><circle cx="850" cy="110" r="1"/><circle cx="1000" cy="54" r="1.2"/><circle cx="1138" cy="140" r="1"/><circle cx="1310" cy="68" r="1.3"/><circle cx="1360" cy="280" r="1"/><circle cx="90" cy="480" r="1.1"/><circle cx="275" cy="560" r="1.2"/><circle cx="520" cy="500" r="1"/><circle cx="680" cy="570" r="1.3"/><circle cx="880" cy="510" r="1"/><circle cx="1090" cy="570" r="1.2"/><circle cx="1280" cy="470" r="1"/>
     </g>
-    <g fill="none" stroke="#7fb8ff" stroke-opacity=".28" stroke-width="8" filter="url(#webBlur)">
-      <path d="M40 70 C200 120 180 280 330 220 S500 70 620 160 S820 350 960 230 S1100 100 1180 130"/>
-      <path d="M40 320 C180 260 240 100 360 140 S540 330 660 280 S850 100 990 130 S1110 300 1180 330"/>
+    <!-- distant, fine strands establish depth -->
+    <g fill="none" stroke="url(#depthFilament)" stroke-width="1.2" opacity=".65">
+      <path d="M-40 150 C180 20 280 80 420 205 S700 390 850 240 S1130 25 1440 150"/>
+      <path d="M-30 480 C160 330 260 360 410 470 S710 590 880 430 S1160 280 1440 390"/>
+      <path d="M100 -30 C220 150 300 270 460 300 S740 260 900 80 S1190 -10 1320 180"/>
+      <path d="M180 650 C260 450 410 340 570 330 S850 390 1010 570"/>
+      <path d="M480 -30 C520 120 640 210 760 260 S980 310 1110 170 S1280 70 1430 50"/>
+      <path d="M-20 300 C180 210 330 210 500 300 S820 420 1010 300 S1260 200 1430 290"/>
     </g>
+    <!-- broad, three-dimensional golden filaments -->
+    <g fill="none" stroke="#d99d3c" stroke-opacity=".22" stroke-width="13" filter="url(#goldBloom)">
+      <path d="M-40 90 C160 110 180 330 360 300 S550 65 710 170 S900 470 1080 330 S1260 100 1440 170"/>
+      <path d="M-30 420 C150 350 220 120 390 160 S600 430 770 390 S990 110 1160 150 S1320 400 1440 440"/>
+      <path d="M120 -30 C230 120 330 190 360 300 S400 470 570 650"/>
+      <path d="M530 -30 C590 120 680 150 710 170 S820 310 770 390 S830 520 930 650"/>
+      <path d="M1030 -30 C930 100 1020 220 1080 330 S1200 490 1300 650"/>
+    </g>
+    <g fill="none" stroke="url(#goldFilament)" stroke-linecap="round">
+      <path stroke-width="3.2" d="M-40 90 C160 110 180 330 360 300 S550 65 710 170 S900 470 1080 330 S1260 100 1440 170"/>
+      <path stroke-width="2.7" d="M-30 420 C150 350 220 120 390 160 S600 430 770 390 S990 110 1160 150 S1320 400 1440 440"/>
+      <path stroke-width="2.2" d="M120 -30 C230 120 330 190 360 300 S400 470 570 650"/>
+      <path stroke-width="2.5" d="M530 -30 C590 120 680 150 710 170 S820 310 770 390 S830 520 930 650"/>
+      <path stroke-width="2.4" d="M1030 -30 C930 100 1020 220 1080 330 S1200 490 1300 650"/>
+      <path stroke-width="1.8" d="M-20 250 C180 180 250 230 390 160 S610 40 760 110 S1010 300 1160 150 S1320 50 1430 90"/>
+      <path stroke-width="1.8" d="M40 560 C190 430 260 400 420 470 S690 540 850 430 S1080 240 1250 300 S1380 400 1440 540"/>
+      <path stroke-width="1.5" d="M210 -20 C280 120 430 190 560 250 S820 280 960 190 S1170 20 1380 -20"/>
+      <path stroke-width="1.5" d="M-20 540 C150 420 220 280 360 300 S610 370 770 390 S1080 500 1220 620"/>
+      <path stroke-width="1.5" d="M700 -20 C650 110 560 180 560 250 S650 410 850 430 S1110 420 1400 300"/>
+      <path stroke-width="1.4" d="M-20 160 C180 300 260 470 420 470 S690 330 850 430 S1100 590 1430 500"/>
+      <path stroke-width="1.3" d="M340 -20 C410 90 500 160 710 170 S1010 120 1160 150 S1320 260 1420 330"/>
+    </g>
+    <!-- fine cross-links create the spider-web lattice -->
+    <g fill="none" stroke="#f0c66f" stroke-width="1.05" stroke-opacity=".52">
+      <path d="M80 110 Q220 190 360 300 Q470 390 620 430"/>
+      <path d="M160 80 Q250 210 390 160 Q520 125 710 170"/>
+      <path d="M260 40 Q320 180 360 300 Q500 330 770 390"/>
+      <path d="M420 80 Q500 190 560 250 Q680 310 850 430"/>
+      <path d="M600 30 Q650 100 710 170 Q800 230 960 190"/>
+      <path d="M820 40 Q760 170 770 390 Q900 370 1080 330"/>
+      <path d="M1000 40 Q920 160 960 190 Q1040 250 1160 150"/>
+      <path d="M1180 70 Q1100 220 1080 330 Q1210 360 1360 420"/>
+      <path d="M80 390 Q230 330 390 160 Q540 300 620 430"/>
+      <path d="M180 520 Q300 410 420 470 Q590 500 770 390"/>
+      <path d="M520 580 Q620 470 620 430 Q740 340 850 430"/>
+      <path d="M930 580 Q880 480 850 430 Q980 360 1080 330"/>
+      <path d="M1110 540 Q1080 430 1080 330 Q1220 250 1360 270"/>
+    </g>
+    <!-- luminous galaxy hubs -->
     <g>
-      <circle cx="300" cy="220" r="54" fill="url(#webGlow)"/><circle cx="300" cy="220" r="5" fill="#f5d990"/>
-      <circle cx="600" cy="150" r="68" fill="url(#webGlow)"/><circle cx="600" cy="150" r="7" fill="#fff0c2"/>
-      <circle cx="930" cy="230" r="62" fill="url(#webGlow)"/><circle cx="930" cy="230" r="6" fill="#f5d990"/>
-      <circle cx="390" cy="350" r="38" fill="url(#webGlow)"/><circle cx="390" cy="350" r="4" fill="#b8d8ff"/>
-      <circle cx="640" cy="280" r="42" fill="url(#webGlow)"/><circle cx="640" cy="280" r="4" fill="#b8d8ff"/>
-      <circle cx="990" cy="130" r="36" fill="url(#webGlow)"/><circle cx="990" cy="130" r="4" fill="#f5d990"/>
-      <circle cx="150" cy="115" r="25" fill="url(#webGlow)"/><circle cx="150" cy="115" r="3" fill="#d8e8ff"/>
-      <circle cx="1100" cy="330" r="28" fill="url(#webGlow)"/><circle cx="1100" cy="330" r="3" fill="#d8e8ff"/>
+      <g transform="translate(360 300)"><circle r="86" fill="url(#goldNode)" opacity=".72"/><circle r="31" fill="#e6a943" opacity=".16" filter="url(#goldBloom)"/><circle r="8" fill="#fff2c6"/><circle r="3" fill="#fff"/></g>
+      <g transform="translate(710 170)"><circle r="112" fill="url(#goldNode)" opacity=".82"/><circle r="42" fill="#e6a943" opacity=".24" filter="url(#goldBloom)"/><circle r="11" fill="#fff5d5"/><circle r="4" fill="#fff"/></g>
+      <g transform="translate(1080 330)"><circle r="94" fill="url(#goldNode)" opacity=".76"/><circle r="35" fill="#e6a943" opacity=".2" filter="url(#goldBloom)"/><circle r="9" fill="#fff0c0"/><circle r="3" fill="#fff"/></g>
+      <g transform="translate(390 160)"><circle r="55" fill="url(#goldNode)" opacity=".72"/><circle r="6" fill="#fff0c0"/></g>
+      <g transform="translate(770 390)"><circle r="64" fill="url(#goldNode)" opacity=".72"/><circle r="7" fill="#fff0c0"/></g>
+      <g transform="translate(1160 150)"><circle r="56" fill="url(#goldNode)" opacity=".72"/><circle r="6" fill="#fff0c0"/></g>
+      <g transform="translate(620 430)"><circle r="42" fill="url(#goldNode)" opacity=".62"/><circle r="5" fill="#fff0c0"/></g>
+      <g transform="translate(850 430)"><circle r="38" fill="url(#goldNode)" opacity=".58"/><circle r="4" fill="#fff0c0"/></g>
     </g>
-    <g fill="#d9e8ff" opacity=".7">
-      <circle cx="85" cy="65" r="1.5"/><circle cx="210" cy="300" r="1.2"/><circle cx="430" cy="80" r="1.4"/><circle cx="520" cy="370" r="1.2"/><circle cx="750" cy="65" r="1.5"/><circle cx="820" cy="360" r="1.2"/><circle cx="1060" cy="60" r="1.4"/><circle cx="1140" cy="250" r="1.3"/><circle cx="70" cy="370" r="1.2"/><circle cx="730" cy="210" r="1.2"/>
+    <!-- glints along the filaments -->
+    <g fill="#fff0bd" filter="url(#softBloom)">
+      <circle cx="150" cy="155" r="2.5"/><circle cx="245" cy="260" r="2"/><circle cx="485" cy="235" r="2.5"/><circle cx="560" cy="105" r="2"/><circle cx="650" cy="130" r="2.5"/><circle cx="815" cy="270" r="2.3"/><circle cx="925" cy="190" r="2"/><circle cx="990" cy="390" r="2.4"/><circle cx="1240" cy="230" r="2.5"/><circle cx="1280" cy="370" r="2"/>
     </g>
   </svg>
-  <p class="small" style="text-align:center;letter-spacing:1.4px;margin:0;color:#9eacc8;">THE COSMIC WEB · GALAXIES GATHER ALONG FILAMENTS, WITH VAST VOIDS BETWEEN THEM</p>
-  <p class="small" style="text-align:center;max-width:760px;margin:6px auto 0;">An original artistic interpretation of large-scale cosmic structure, informed by astronomical observations and simulations. <a href="https://science.nasa.gov/mission/hubble/science/science-highlights/mapping-the-cosmic-web/" target="_blank" rel="noopener">Explore NASA's cosmic-web mapping</a>.</p>
+  <p class="small" style="text-align:center;letter-spacing:1.8px;margin:0;color:#e2bd70;">THE COSMIC WEB · GALAXIES GATHER ALONG FILAMENTS, WITH VAST VOIDS BETWEEN THEM</p>
+  <p class="small" style="text-align:center;max-width:760px;margin:6px auto 0;">An artistic interpretation of the universe's large-scale structure: luminous golden filaments, connected galaxy clusters and immense dark voids. <a href="https://science.nasa.gov/mission/hubble/science/science-highlights/mapping-the-cosmic-web/" target="_blank" rel="noopener">Explore NASA's cosmic-web mapping</a>.</p>
 </div>
 
 <section id="threshold">
