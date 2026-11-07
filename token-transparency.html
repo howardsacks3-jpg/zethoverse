@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="ZETHO token transparency, proposed supply and allocation, founder vesting safeguards, public release records and launch-price mechanics.">
+<meta name="theme-color" content="#050711">
+<title>ZETHOVERSE | ZETHO Token Transparency &amp; Vesting</title>
+<style>
+:root{--bg:#050711;--panel:#101526;--gold:#e4c477;--blue:#9db8ef;--text:#eeeaf2;--muted:#b9bfd1;--line:#27314b}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(ellipse at 50% 0%,#14213d 0%,var(--bg) 48%);color:var(--text);font:16px/1.75 Arial,sans-serif}
+a{color:var(--gold);text-decoration:none}a:hover{text-decoration:underline}
+header{padding:22px 7%;display:flex;justify-content:space-between;align-items:center;gap:20px;border-bottom:1px solid var(--line)}
+.logo{font-size:20px;font-weight:bold;letter-spacing:4px;color:var(--gold)}
+nav{display:flex;gap:16px;flex-wrap:wrap;font-size:13px}nav a{color:#c5c7d8}
+.hero{max-width:1000px;margin:auto;padding:78px 24px 42px;text-align:center}
+.eyebrow{color:var(--blue);letter-spacing:3px;text-transform:uppercase;font-size:12px}
+h1{font-size:clamp(32px,6vw,54px);line-height:1.15;letter-spacing:2px;color:var(--gold);margin:14px 0}
+.hero p{max-width:800px;margin:18px auto;color:var(--muted)}
+main{max-width:1000px;margin:auto;padding:0 24px 75px}
+section{padding:27px 0;border-bottom:1px solid var(--line)}
+h2{font-size:25px;color:var(--gold);font-weight:500;margin:0 0 12px}
+h3{font-size:19px;color:#e7d29b;font-weight:500;margin:22px 0 8px}
+p,li{color:#c7ccda}
+.panel{background:linear-gradient(145deg,#111a2d,#0c1221);border:1px solid var(--line);border-radius:12px;padding:20px;margin:18px 0}
+.notice{border-left:3px solid var(--gold);background:#12192a;padding:15px 18px;margin:22px 0;color:#c7ccda}
+.status{display:inline-block;border:1px solid #8c7441;border-radius:20px;padding:5px 12px;color:#e7d29b;font-size:12px;letter-spacing:1px}
+table{width:100%;border-collapse:collapse;margin:15px 0}
+th,td{text-align:left;padding:11px;border-bottom:1px solid var(--line);vertical-align:top}
+th{color:var(--gold);font-weight:600}
+td{color:#c7ccda}
+.small{font-size:13px;color:#969eb3}
+.formula{font-size:clamp(21px,4vw,30px);color:var(--gold);text-align:center;padding:18px;background:#0a1020;border:1px solid var(--line);border-radius:8px;overflow-wrap:anywhere}
+footer{text-align:center;padding:28px 18px;border-top:1px solid var(--line);color:#969eb3;font-size:13px}
+@media(max-width:700px){header{flex-direction:column}nav{justify-content:center;gap:13px}.hero{padding:58px 20px 35px}main{padding:0 18px 55px}th,td{padding:8px;font-size:14px}}
+</style>
+</head>
+<body>
+<header>
+<a class="logo" href="index.html">ZETHOVERSE</a>
+<nav aria-label="Main navigation">
+<a href="index.html">Home</a><a href="about.html">About</a><a href="litepaper.html">Litepaper</a>
+<a href="coin.html">The Coin · ZETHO</a><a href="token-transparency.html">Transparency &amp; Vesting</a>
+<a href="roadmap.html">Roadmap</a><a href="faq.html">FAQ</a><a href="disclaimer.html">Legal</a>
+</nav>
+</header>
+<div class="hero">
+<div class="eyebrow">Public token information · ZETHO</div>
+<h1>ZETHO TOKEN TRANSPARENCY &amp; VESTING</h1>
+<p>Supply, allocation, founder-release safeguards, public records and the proposed launch-price mechanism — presented in one place for public inspection.</p>
+<p class="status">WORKING FRAMEWORK · NOT YET DEPLOYED</p>
+</div>
+<main>
+<div class="notice"><strong>Important status notice:</strong> This page records the current working framework and design commitments selected during project development. It is not evidence that a token has been minted, a vesting program or vault has been deployed, liquidity has been added, or any token has been released. No official ZETHO coin has launched or been offered for sale. Final implementation, independent technical review and any required legal review must take place before launch. Only on-chain records can prove that a transaction occurred.</div>
+
+<section id="supply">
+<h2>1. Proposed token supply and allocation</h2>
+<p>The current working model is a fixed total supply of <strong>5,000,000,000 ZETHO</strong>, with <strong>9 decimal places</strong>. Solana is the proposed production blockchain. These are working project parameters, not yet deployed or irrevocably finalised.</p>
+<table>
+<thead><tr><th>Allocation</th><th>Share</th><th>Quantity</th><th>Intended purpose</th></tr></thead>
+<tbody>
+<tr><td>Founder</td><td>30%</td><td>1,500,000,000</td><td>Subject to the founder vesting and exceptional-release safeguards below.</td></tr>
+<tr><td>Public</td><td>50%</td><td>2,500,000,000</td><td>Reserved for the eventual public distribution model. The mechanism and eligibility rules remain to be finalised.</td></tr>
+<tr><td>Liquidity</td><td>5%</td><td>250,000,000</td><td>Reserved for liquidity provision. This does not mean the entire amount must be placed into the initial pool.</td></tr>
+<tr><td>Marketing and community</td><td>5%</td><td>250,000,000</td><td>Reserved for disclosed project, outreach and community purposes.</td></tr>
+<tr><td>Development reserve</td><td>10%</td><td>500,000,000</td><td>Reserved for disclosed development and project needs.</td></tr>
+<tr><td><strong>Total</strong></td><td><strong>100%</strong></td><td><strong>5,000,000,000</strong></td><td></td></tr>
+</tbody>
+</table>
+<p class="small">The public distribution mechanism, wallet limits, treasury controls and detailed operating rules have not yet been finalised. No public subscription desk, customer-fund handling or exchange operation is implied by this allocation table.</p>
+</section>
+
+<section id="vesting">
+<h2>2. Founder vesting schedule</h2>
+<p>The current selected working schedule divides the 1.5 billion founder allocation into a normal vesting portion of <strong>1.35 billion ZETHO (90%)</strong> and a separately restricted exceptional-release allowance of <strong>150 million ZETHO (10%)</strong>.</p>
+<div class="panel">
+<h3>Normal founder vesting</h3>
+<table>
+<tbody>
+<tr><th>Normal vesting pool</th><td>1,350,000,000 ZETHO</td></tr>
+<tr><th>Number of monthly instalments</th><td>36</td></tr>
+<tr><th>Each scheduled instalment</th><td><strong>37,500,000 ZETHO</strong></td></tr>
+<tr><th>First scheduled transfer</th><td>One calendar month after the official launch date</td></tr>
+<tr><th>Launch-day founder transfer</th><td>None under this schedule</td></tr>
+</tbody>
+</table>
+<p>The first instalment is due one calendar month after launch, followed by 35 further monthly instalments. The intended mechanism is an automatic on-chain transfer to the published founder destination wallet when an instalment becomes due. The destination wallet and exact schedule must be published before launch.</p>
+</div>
+<h3>How scheduled releases will be executed</h3>
+<ul>
+<li>The normal vesting pool is to be held in a dedicated on-chain vesting vault controlled by the vesting program, not by an unrestricted creator withdrawal key.</li>
+<li>A scheduled execution service (a keeper) submits the transaction when an instalment is due. Solana programs do not wake themselves up; a transaction must be submitted to the network. The keeper pays the transaction fee.</li>
+<li>The program must independently check the due date, permitted amount, destination and whether that instalment has already been paid.</li>
+<li>Each instalment may be paid only once. Duplicate keeper submissions must not create duplicate transfers.</li>
+<li>If an execution is missed or delayed, the overdue instalment remains due. The next successful execution must catch up the overdue instalment rather than silently skip it. Overdue instalments should be processed individually under the published rules, not turned into an unrestricted discretionary withdrawal.</li>
+<li>A monitored primary keeper and an independent backup execution path should be arranged. The program must remain the authority for whether a release is valid.</li>
+<li>Before mainnet launch, the program must be tested and independently security-reviewed. A public dashboard is a display of blockchain data; it is not a substitute for the on-chain record.</li>
+</ul>
+<div class="notice"><strong>Reliability commitment:</strong> Releases must be administered diligently, timely, reliably and consistently. Negligent failure by the creator or designated operator to carry out the published schedule, without a valid and publicly explained reason, is a breach of ZETHOVERSE's published project rules. Whether conduct also constitutes a breach of law or regulatory obligation depends on the applicable law and facts.</div>
+</section>
+
+<section id="exceptional">
+<h2>3. Exceptional early-release allowance</h2>
+<p>A maximum of <strong>150,000,000 ZETHO</strong> — 10% of the founder allocation — is being kept separate from the normal monthly vesting pool as a possible exceptional early-release allowance. It is not an automatic payment, an unrestricted founder withdrawal right, or permission to release tokens whenever the market price rises.</p>
+<ul>
+<li>A price peak by itself is not proof of sustainable demand.</li>
+<li>Any qualifying release must depend on clear market-health criteria, observation periods and a transparent decision process published before launch.</li>
+<li>The amount released under this provision must never exceed the published cumulative cap.</li>
+<li>Every exceptional release must be publicly identified with its amount, date, reason and on-chain transaction reference.</li>
+<li>Any unused portion remains locked. It does not automatically become available to the founder after the 36 monthly instalments have finished.</li>
+</ul>
+<p class="small">The detailed qualifying tests, authorisation method and technical implementation for exceptional releases remain to be finalised. Until those rules are published and implemented, no exceptional release should be treated as available or authorised.</p>
+</section>
+
+<section id="public-record">
+<h2>4. Public release records — how everyone can verify</h2>
+<p>The public must be able to see what was scheduled, what was actually released, when it happened, how much moved and where it went. Transparency must be built into the on-chain design and reflected on this permanent website page; it must not depend only on announcements or a manually maintained spreadsheet.</p>
+<p>Once the token and vesting program are deployed, this page should display or link to live, independently verifiable blockchain data, including:</p>
+<ul>
+<li>Total token supply and each allocation wallet or vault.</li>
+<li>The founder vesting vault address and the published founder destination wallet.</li>
+<li>The original launch date and full monthly release calendar.</li>
+<li>Each instalment's amount, due date and status: scheduled, overdue or completed.</li>
+<li>Total founder tokens released to date and the remaining locked balance.</li>
+<li>Every exceptional release, including amount, date and publicly stated reason.</li>
+<li>Transaction signatures and direct links to the relevant Solscan records.</li>
+<li>Any approved amendment, the date it was announced, the reason and the applicable effective date.</li>
+</ul>
+<div class="panel">
+<h3>Public release history</h3>
+<p><strong>Live release history:</strong> Not available yet — the token and vesting program have not been deployed.</p>
+<p class="small">After deployment, the release history should be populated from Solana on-chain records. The blockchain transaction is the source of truth; this page and any dashboard are public reporting interfaces.</p>
+</div>
+</section>
+
+<section id="changes">
+<h2>5. Changes, delays and accountability</h2>
+<p>No undisclosed or silent change may be made to the published supply, allocation, vesting schedule, release amount, destination or release rules. Any change that is legally and technically permitted must be publicly disclosed in a timely manner, with a clear explanation, the reason for the change, its effect and the date it takes effect. Where feasible, advance public notice and a timelock should apply.</p>
+<p>The creator and any appointed operator are expected to administer the published rules diligently, reliably and consistently. A delay must not be concealed. If a release cannot be executed on time, the reason and corrective action must be disclosed publicly, and the overdue instalment must remain visible until resolved.</p>
+<p>The intended design is to minimise discretionary control over locked tokens. Any final program should be reviewed for whether its rules can be changed, who can authorise a change, and whether the creator can bypass the restrictions. Those powers and limitations must be disclosed before launch.</p>
+</section>
+
+<section id="launch-price">
+<h2>6. Launch price and initial liquidity</h2>
+<p><strong>The launch price has not been selected.</strong> The 5 billion token supply does not by itself determine the market price. If ZETHO launches through a decentralised liquidity pool, the initial quoted price will be determined by the ratio of ZETHO tokens to the paired asset (for example, SOL or USDC) placed into that pool.</p>
+<div class="formula">Initial pool price = value of paired assets ÷ number of ZETHO tokens in the pool</div>
+<p>The following are illustrations only. They are not approved prices, offers, forecasts or guarantees:</p>
+<table>
+<thead><tr><th>Illustrative price per ZETHO</th><th>Implied fully diluted valuation at 5 billion supply</th></tr></thead>
+<tbody>
+<tr><td>$0.0001</td><td>$500,000</td></tr>
+<tr><td>$0.0005</td><td>$2,500,000</td></tr>
+<tr><td>$0.001</td><td>$5,000,000</td></tr>
+<tr><td>$0.005</td><td>$25,000,000</td></tr>
+<tr><td>$0.01</td><td>$50,000,000</td></tr>
+</tbody>
+</table>
+<p>The liquidity allocation of 250 million ZETHO does not mean all 250 million must enter the initial pool. The actual pool size, paired asset, ZETHO quantity, initial ratio, liquidity-provider arrangements and any lock or control arrangements must be decided and disclosed before launch.</p>
+<p class="small">A pool's initial ratio is not a promise that the market will continue trading at that price. Prices can move sharply, liquidity can be limited, and buyers may lose some or all of the value they commit.</p>
+</section>
+
+<section id="launch-status">
+<h2>7. What exists today — and what does not</h2>
+<table>
+<tbody>
+<tr><th>Token minted on Solana mainnet</th><td>Not yet</td></tr>
+<tr><th>Vesting program or vault deployed</th><td>Not yet</td></tr>
+<tr><th>Founder vesting transfers started</th><td>No</td></tr>
+<tr><th>Liquidity pool created or funded</th><td>Not yet</td></tr>
+<tr><th>Launch price selected</th><td>No</td></tr>
+<tr><th>Public sale/distribution mechanism finalised</th><td>No</td></tr>
+<tr><th>Exceptional-release criteria finalised</th><td>No</td></tr>
+</tbody>
+</table>
+<p>These items will be updated only when the relevant decisions have been made and, where applicable, implementation can be independently verified. A proposed rule on this page must not be mistaken for deployed code or a completed transaction.</p>
+</section>
+
+<section>
+<h2>8. Verification and contact</h2>
+<p>After deployment, official mint, vault, program and transaction addresses should be published here and linked to independent blockchain explorers. Verify contract addresses through ZETHOVERSE's official website before interacting with any token or wallet. Beware of impersonators and unofficial tokens.</p>
+<p>For questions about the project, use the contact details published on the <a href="about.html">About page</a>.</p>
+<p class="small">This page provides project information, not financial, investment, legal or tax advice. Digital assets involve substantial risk. The applicable law and the actual implemented arrangements prevail over any summary on this page.</p>
+<p class="small">Last updated: 7 November 2026 · ZETHOVERSE · One tiny universe. Everyone connected.</p>
+</section>
+</main>
+<footer>
+<p style="color:#e4c477;letter-spacing:3px;font-weight:bold">ZETHOVERSE</p>
+<p>One tiny universe. Everyone connected.</p>
+<p><a href="index.html">Home</a> · <a href="litepaper.html">Litepaper</a> · <a href="roadmap.html">Roadmap</a> · <a href="faq.html">FAQ</a> · <a href="disclaimer.html">Legal</a></p>
+<p>© 2026 ZETHOVERSE · Informational purposes only. No official coin is currently offered for sale.</p>
+</footer>
+</body>
+</html>
