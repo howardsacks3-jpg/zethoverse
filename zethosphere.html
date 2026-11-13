@@ -33,7 +33,7 @@
 <article class="card"><h3>Verified market high</h3><div class="value" id="monitor-high">—</div><p class="muted">Confirmed price high only</p></article>
 <article class="card"><h3>Verified market low</h3><div class="value" id="monitor-low">—</div><p class="muted">Confirmed price low only</p></article>
 <article class="card"><h3>Last confirmed price</h3><div class="value" id="monitor-current">—</div><p class="muted">Waiting for a connected source</p></article>
-<article class="card"><h3>Confirmed pool liquidity</h3><div class="value" id="monitor-liquidity">—</div><p class="muted">Liquidity withdrawals monitored</p></article>
+<article class="card"><h3>Confirmed pool liquidity</h3><div class="value" id="monitor-liquidity">—</div><p class="muted">Simulation only — live reserve feed not connected</p></article>
 </div>
 <article class="card" style="margin-top:14px">
   <h3>Monitoring engine test bench</h3>
@@ -41,7 +41,7 @@
   <button id="run-monitor-simulation" type="button" style="margin-top:12px;padding:10px 16px;border:1px solid #e4c477;border-radius:8px;background:#241e15;color:#ffe4a9;cursor:pointer;font-weight:600">Run simulated alert test</button>
   <pre id="monitor-simulation-output" aria-live="polite" style="white-space:pre-wrap;background:#080d19;border:1px solid #28344d;border-radius:8px;padding:14px;margin-top:14px;color:#cbd3e2;min-height:48px">Simulation not run yet.</pre>
   <pre id="monitor-alert-list" aria-live="polite" style="white-space:pre-wrap;background:#080d19;border:1px solid #28344d;border-radius:8px;padding:14px;margin-top:10px;color:#cbd3e2;min-height:48px">No alerts generated yet.</pre>
-  <p class="muted">Test mode only. No live market connection, wallet access, signing or transactions.</p>
+  <p class="muted"><strong>STATUS: SIMULATION-TESTED, NOT LIVE-VERIFIED.</strong> Reserve-based withdrawal detection requires stable readings of both underlying pool reserves. No live market connection, wallet access, signing or transactions.</p>
 </article>
 
 <div class="section"><div class="eyebrow">02 / On-chain activity</div><h2>Recent transactions</h2><p>When connected, this table will show timestamp, transaction type, token amount, source and a public explorer link.</p></div>
