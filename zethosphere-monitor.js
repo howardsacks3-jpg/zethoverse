@@ -18,7 +18,10 @@ export const DEFAULT_CONFIG = Object.freeze({
   maxSampleGapMs: 60000,
   priceDeviationTolerancePct: 20,
   reserveDropTolerancePct: 5,
-  reserveConfirmationTolerancePct: 5
+  reserveConfirmationTolerancePct: 5,
+  maxSnapshotAgeMs: 90000,
+  futureTimestampToleranceMs: 5000,
+  offlineAfterMs: 90000
 });
 
 const pct = (value, base) => base > 0 ? ((value - base) / base) * 100 : 0;
@@ -36,7 +39,8 @@ export function createMarketMonitor(overrides = {}) {
     alerts: [],
     gainMilestonesSent: new Set(),
     peakAlertsSent: new Set(),
-    lowAlertsSent: new Set()
+    lowAlertsSent: new Set(),
+    lastGapAt: null
   };
 
   function addAlert(type, severity, title, detail, at, key) {
@@ -44,9 +48,11 @@ export function createMarketMonitor(overrides = {}) {
     state.alerts.unshift({ type, severity, title, detail, at, key });
   }
 
-  function validate(snapshot) {
+  function validate(snapshot, now) {
     if (!snapshot || !Number.isFinite(snapshot.priceUsd) || snapshot.priceUsd <= 0) return "Invalid price";
     if (!Number.isFinite(snapshot.timestamp)) return "Missing timestamp";
+    if (snapshot.timestamp > now + config.futureTimestampToleranceMs) return "Timestamp is too far in the future";
+    if (now - snapshot.timestamp > config.maxSnapshotAgeMs) return "Snapshot is stale";
     if (snapshot.sourceConfirmed !== true) return "Source not independently confirmed";
     if (!Number.isFinite(snapshot.liquidityUsd) || snapshot.liquidityUsd < config.minLiquidityUsd) return "Liquidity below configured minimum";
     if (!Number.isFinite(snapshot.reserveA) || snapshot.reserveA <= 0 ||
@@ -100,15 +106,26 @@ export function createMarketMonitor(overrides = {}) {
         const confirmedDrop = Math.min(dropA, dropB);
         for (const threshold of config.liquidityDropPct) {
           if (confirmedDrop + 1e-9 >= threshold) {
-            addAlert("liquidity", threshold >= 20 ? "urgent" : "warning",
-              `${threshold}% pool-liquidity reduction`,
-              `Both verified pool reserves fell proportionally: reserve A ${dropA.toFixed(2)}%, reserve B ${dropB.toFixed(2)}%. Dollar-value changes alone are not used to classify withdrawals.`, at,
-              `liquidity-${threshold}-${previous.reserveA}-${previous.reserveB}-${latest.reserveA}-${latest.reserveB}`);
+            addAlert("liquidity-change-suspected", threshold >= 20 ? "urgent" : "warning",
+              `${threshold}% proportional reserve reduction — investigate`,
+              `Reserve A fell ${dropA.toFixed(2)}% and reserve B fell ${dropB.toFixed(2)}%. This is a reserve-change warning only; it does NOT prove an LP withdrawal. Confirm the pool transaction and Raydium instruction/event before classifying it as liquidity removal.`, at,
+              `reserve-change-${threshold}-${previous.reserveA}-${previous.reserveB}-${latest.reserveA}-${latest.reserveB}`);
           }
         }
       }
     }
-    if (reservesStable) state.previousConfirmedReserves = { reserveA: latest.reserveA, reserveB: latest.reserveB };
+    // Keep the comparison anchor across sub-threshold proportional reductions so
+    // several small changes cannot continually reset and hide a cumulative decline.
+    // This remains a heuristic warning, not proof of an LP withdrawal.
+    if (reservesStable && state.previousConfirmedReserves === null) {
+      state.previousConfirmedReserves = { reserveA: latest.reserveA, reserveB: latest.reserveB };
+    }
+    if (reservesStable && state.previousConfirmedReserves !== null &&
+        latest.reserveA >= state.previousConfirmedReserves.reserveA &&
+        latest.reserveB >= state.previousConfirmedReserves.reserveB) {
+      // Re-anchor after reserves recover or grow; asymmetric swap movements do not re-anchor.
+      state.previousConfirmedReserves = { reserveA: latest.reserveA, reserveB: latest.reserveB };
+    }
 
     if (state.verifiedHighUsd === null || price > state.verifiedHighUsd) {
       const previousHigh = state.verifiedHighUsd;
@@ -163,7 +180,7 @@ export function createMarketMonitor(overrides = {}) {
     ingest(snapshot) {
       const reason = validate(snapshot);
       if (reason) return { accepted: false, confirmed: false, reason, state: this.getState() };
-      state.samples.push({
+      if (state.lastAcceptedAt !== null && snapshot.timestamp - state.lastAcceptedAt > config.maxSampleGapMs) {\n        state.samples = [];\n        state.lastGapAt = snapshot.timestamp;\n      }\n      state.samples.push({
         priceUsd: snapshot.priceUsd,
         timestamp: snapshot.timestamp,
         liquidityUsd: snapshot.liquidityUsd,
