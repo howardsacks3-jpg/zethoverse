@@ -9,7 +9,7 @@ const config = {
   minSwaps5m: 3
 };
 const sample = (priceUsd, timestamp, extra = {}) => ({
-  priceUsd, timestamp, liquidityUsd: 5000, volumeUsd5m: 100,
+  priceUsd, timestamp, liquidityUsd: 5000, reserveA: 100000, reserveB: 1000000, volumeUsd5m: 100,
   swapCount5m: 5, sourceConfirmed: true, ...extra
 });
 const confirm = (monitor, price, start) => {
@@ -70,13 +70,42 @@ test("rejects stale, duplicate and unconfirmed source samples", () => {
 
 test("detects a confirmed pool-liquidity reduction", () => {
   const monitor = createMarketMonitor(config);
-  const withLiquidity = (priceUsd, timestamp, liquidityUsd) =>
-    sample(priceUsd, timestamp, { liquidityUsd });
-  monitor.ingest(withLiquidity(1, 1000, 5000));
-  monitor.ingest(withLiquidity(1, 16000, 5000));
-  monitor.ingest(withLiquidity(1, 31000, 5000));
-  monitor.ingest(withLiquidity(1, 50000, 4000));
-  monitor.ingest(withLiquidity(1, 65000, 4000));
-  monitor.ingest(withLiquidity(1, 80000, 4000));
+  const withLiquidity = (priceUsd, timestamp, liquidityUsd, reserveA, reserveB) =>
+    sample(priceUsd, timestamp, { liquidityUsd, reserveA, reserveB });
+  monitor.ingest(withLiquidity(1, 1000, 5000, 100000, 1000000));
+  monitor.ingest(withLiquidity(1, 16000, 5000, 100000, 1000000));
+  monitor.ingest(withLiquidity(1, 31000, 5000, 100000, 1000000));
+  monitor.ingest(withLiquidity(1, 50000, 4000, 80000, 800000));
+  monitor.ingest(withLiquidity(1, 65000, 4000, 80000, 800000));
+  monitor.ingest(withLiquidity(1, 80000, 4000, 80000, 800000));
   assert.ok(monitor.getState().alerts.some(a => a.type === "liquidity" && a.title === "20% pool-liquidity reduction"));
+});
+
+
+test("does not call a dollar-value decline a withdrawal when reserves are unchanged", () => {
+  const monitor = createMarketMonitor(config);
+  const valueOnly = (timestamp, liquidityUsd) => sample(1, timestamp, { liquidityUsd });
+  confirm(monitor, 1, 1000);
+  monitor.ingest(valueOnly(50000, 4000));
+  monitor.ingest(valueOnly(65000, 4000));
+  monitor.ingest(valueOnly(80000, 4000));
+  assert.equal(monitor.getState().alerts.some(a => a.type === "liquidity"), false);
+});
+
+test("does not classify a one-sided reserve change as a liquidity withdrawal", () => {
+  const monitor = createMarketMonitor(config);
+  confirm(monitor, 1, 1000);
+  const oneSided = (timestamp, reserveA, reserveB) =>
+    sample(1, timestamp, { reserveA, reserveB });
+  monitor.ingest(oneSided(50000, 80000, 1200000));
+  monitor.ingest(oneSided(65000, 80000, 1200000));
+  monitor.ingest(oneSided(80000, 80000, 1200000));
+  assert.equal(monitor.getState().alerts.some(a => a.type === "liquidity"), false);
+});
+
+test("rejects snapshots without verified underlying reserves", () => {
+  const monitor = createMarketMonitor(config);
+  const result = monitor.ingest(sample(1, 1000, { reserveA: undefined, reserveB: undefined }));
+  assert.equal(result.accepted, false);
+  assert.match(result.reason, /reserves unavailable/i);
 });
