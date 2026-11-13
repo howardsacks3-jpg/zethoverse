@@ -213,7 +213,7 @@ if (typeof document !== "undefined") {
       feed(0.000018, 90); feed(0.000018, 105); feed(0.000018, 120);
       results.push(["Detect 10% peak reversal", monitor.getState().alerts.some(a => a.type === "peak" && a.title === "10% decline from verified high")]);
       feed(0.000012, 130, 18000, 500, 8, 90000, 900000); feed(0.000012, 145, 18000, 500, 8, 90000, 900000); feed(0.000012, 160, 18000, 500, 8, 90000, 900000);
-      feed(0.0000145, 170); feed(0.0000145, 185); feed(0.0000145, 200);
+      feed(0.0000145, 170, 18000, 500, 8, 90000, 900000); feed(0.0000145, 185, 18000, 500, 8, 90000, 900000); feed(0.0000145, 200, 18000, 500, 8, 90000, 900000);
       results.push(["Detect recovery from verified low", monitor.getState().alerts.some(a => a.type === "recovery")]);
       results.push(["Detect proportional pool-reserve reduction", monitor.getState().alerts.some(a => a.type === "liquidity")]);
 
