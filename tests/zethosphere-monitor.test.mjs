@@ -81,7 +81,7 @@ test("detects a confirmed pool-liquidity reduction", () => {
   monitor.ingest(withLiquidity(1, 50000, 4000, 80000, 800000));
   monitor.ingest(withLiquidity(1, 65000, 4000, 80000, 800000));
   monitor.ingest(withLiquidity(1, 80000, 4000, 80000, 800000));
-  assert.ok(monitor.getState().alerts.some(a => a.type === "liquidity-change-suspected" && a.title === "20% pool-liquidity reduction"));
+  assert.ok(monitor.getState().alerts.some(a => a.type === "liquidity-change-suspected" && a.title === "20% proportional reserve reduction — investigate"));
 });
 
 
