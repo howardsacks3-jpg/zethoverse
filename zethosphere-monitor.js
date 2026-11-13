@@ -53,8 +53,6 @@ export function createMarketMonitor(overrides = {}) {
     if (!Number.isFinite(snapshot.timestamp)) return "Missing timestamp";
     if (snapshot.timestamp > now + config.futureTimestampToleranceMs) return "Timestamp is too far in the future";
     if (now - snapshot.timestamp > config.maxSnapshotAgeMs) return "Snapshot is stale";
-    if (snapshot.timestamp > now + config.futureTimestampToleranceMs) return "Timestamp is too far in the future";
-    if (now - snapshot.timestamp > config.maxSnapshotAgeMs) return "Snapshot is stale";
     if (snapshot.sourceConfirmed !== true) return "Source not independently confirmed";
     if (!Number.isFinite(snapshot.liquidityUsd) || snapshot.liquidityUsd < config.minLiquidityUsd) return "Liquidity below configured minimum";
     if (!Number.isFinite(snapshot.reserveA) || snapshot.reserveA <= 0 ||
@@ -183,7 +181,10 @@ export function createMarketMonitor(overrides = {}) {
       const now = Number.isFinite(options.now) ? options.now : Date.now();
       const reason = validate(snapshot, now);
       if (reason) return { accepted: false, confirmed: false, reason, state: this.getState() };
-      if (state.lastAcceptedAt !== null && snapshot.timestamp - state.lastAcceptedAt > config.maxSampleGapMs) {\n        state.samples = [];\n        state.lastGapAt = snapshot.timestamp;\n      }\n      state.samples.push({
+      if (state.lastAcceptedAt !== null && snapshot.timestamp - state.lastAcceptedAt > config.maxSampleGapMs) {
+        state.samples = [];
+        state.lastGapAt = snapshot.timestamp;
+      }\n      state.samples.push({
         priceUsd: snapshot.priceUsd,
         timestamp: snapshot.timestamp,
         liquidityUsd: snapshot.liquidityUsd,
