@@ -237,7 +237,7 @@ if (typeof document !== "undefined") {
       feed(0.000012, 130, 18000, 500, 8, 90000, 900000); feed(0.000012, 145, 18000, 500, 8, 90000, 900000); feed(0.000012, 160, 18000, 500, 8, 90000, 900000);
       feed(0.0000145, 170, 18000, 500, 8, 90000, 900000); feed(0.0000145, 185, 18000, 500, 8, 90000, 900000); feed(0.0000145, 200, 18000, 500, 8, 90000, 900000);
       results.push(["Detect recovery from verified low", monitor.getState().alerts.some(a => a.type === "recovery")]);
-      results.push(["Detect proportional pool-reserve reduction", monitor.getState().alerts.some(a => a.type === "liquidity")]);
+      results.push(["Detect proportional pool-reserve reduction", monitor.getState().alerts.some(a => a.type === "liquidity-change-suspected")]);
 
       const passed = results.filter(([, ok]) => ok).length;
       output.textContent = results.map(([name, ok]) => `${ok ? "PASS" : "FAIL"} — ${name}`).join("\n")
