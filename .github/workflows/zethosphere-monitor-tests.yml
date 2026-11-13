@@ -1,0 +1,22 @@
+name: ZETHOsphere monitor tests
+
+on:
+  push:
+    branches:
+      - feature/zethosphere-market-monitor
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  monitor-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Run monitoring tests
+        run: npm test
