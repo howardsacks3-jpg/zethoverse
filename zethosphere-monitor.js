@@ -16,7 +16,8 @@ export const DEFAULT_CONFIG = Object.freeze({
   confirmations: 3,
   confirmationWindowMs: 30000,
   maxSampleGapMs: 60000,
-  priceDeviationTolerancePct: 20
+  priceDeviationTolerancePct: 20,
+  reserveDropTolerancePct: 5
 });
 
 const pct = (value, base) => base > 0 ? ((value - base) / base) * 100 : 0;
@@ -29,7 +30,7 @@ export function createMarketMonitor(overrides = {}) {
     verifiedHighUsd: null,
     verifiedLowUsd: null,
     currentLiquidityUsd: null,
-    previousConfirmedLiquidityUsd: null,
+    previousConfirmedReserves: null,
     lastAcceptedAt: null,
     alerts: [],
     gainMilestonesSent: new Set(),
@@ -47,6 +48,8 @@ export function createMarketMonitor(overrides = {}) {
     if (!Number.isFinite(snapshot.timestamp)) return "Missing timestamp";
     if (snapshot.sourceConfirmed !== true) return "Source not independently confirmed";
     if (!Number.isFinite(snapshot.liquidityUsd) || snapshot.liquidityUsd < config.minLiquidityUsd) return "Liquidity below configured minimum";
+    if (!Number.isFinite(snapshot.reserveA) || snapshot.reserveA <= 0 ||
+        !Number.isFinite(snapshot.reserveB) || snapshot.reserveB <= 0) return "Verified pool reserves unavailable";
     if (!Number.isFinite(snapshot.volumeUsd5m) || snapshot.volumeUsd5m < config.minVolumeUsd5m) return "Five-minute volume below configured minimum";
     if (!Number.isInteger(snapshot.swapCount5m) || snapshot.swapCount5m < config.minSwaps5m) return "Insufficient swaps to validate price";
     if (state.lastAcceptedAt !== null && snapshot.timestamp <= state.lastAcceptedAt) return "Out-of-order or duplicate sample";
@@ -72,18 +75,28 @@ export function createMarketMonitor(overrides = {}) {
     const price = latest.priceUsd;
     state.currentPriceUsd = price;
     state.currentLiquidityUsd = latest.liquidityUsd;
-    if (state.previousConfirmedLiquidityUsd !== null && latest.liquidityUsd < state.previousConfirmedLiquidityUsd) {
-      const drop = ((state.previousConfirmedLiquidityUsd - latest.liquidityUsd) / state.previousConfirmedLiquidityUsd) * 100;
-      for (const threshold of config.liquidityDropPct) {
-        if (drop + 1e-9 >= threshold) {
-          addAlert("liquidity", threshold >= 20 ? "urgent" : "warning",
-            `${threshold}% pool-liquidity reduction`,
-            `Confirmed pool liquidity fell ${drop.toFixed(2)}% from ${state.previousConfirmedLiquidityUsd} USD to ${latest.liquidityUsd} USD.`, at,
-            `liquidity-${threshold}-${state.previousConfirmedLiquidityUsd}-${latest.liquidityUsd}`);
+    // A dollar-value decline alone is not evidence of liquidity removal.
+    // Require both underlying pool reserves to fall proportionally between
+    // confirmed snapshots; one-sided changes are treated as swaps/market activity.
+    if (state.previousConfirmedReserves !== null) {
+      const previous = state.previousConfirmedReserves;
+      const dropA = ((previous.reserveA - latest.reserveA) / previous.reserveA) * 100;
+      const dropB = ((previous.reserveB - latest.reserveB) / previous.reserveB) * 100;
+      const proportional = dropA > 0 && dropB > 0 &&
+        Math.abs(dropA - dropB) <= config.reserveDropTolerancePct;
+      if (proportional) {
+        const confirmedDrop = Math.min(dropA, dropB);
+        for (const threshold of config.liquidityDropPct) {
+          if (confirmedDrop + 1e-9 >= threshold) {
+            addAlert("liquidity", threshold >= 20 ? "urgent" : "warning",
+              `${threshold}% pool-liquidity reduction`,
+              `Both verified pool reserves fell proportionally: reserve A ${dropA.toFixed(2)}%, reserve B ${dropB.toFixed(2)}%. Dollar-value changes alone are not used to classify withdrawals.`, at,
+              `liquidity-${threshold}-${previous.reserveA}-${previous.reserveB}-${latest.reserveA}-${latest.reserveB}`);
+          }
         }
       }
     }
-    state.previousConfirmedLiquidityUsd = latest.liquidityUsd;
+    state.previousConfirmedReserves = { reserveA: latest.reserveA, reserveB: latest.reserveB };
 
     if (state.verifiedHighUsd === null || price > state.verifiedHighUsd) {
       const previousHigh = state.verifiedHighUsd;
@@ -142,6 +155,8 @@ export function createMarketMonitor(overrides = {}) {
         priceUsd: snapshot.priceUsd,
         timestamp: snapshot.timestamp,
         liquidityUsd: snapshot.liquidityUsd,
+        reserveA: snapshot.reserveA,
+        reserveB: snapshot.reserveB,
         volumeUsd5m: snapshot.volumeUsd5m,
         swapCount5m: snapshot.swapCount5m
       });
@@ -179,9 +194,9 @@ if (typeof document !== "undefined") {
         minSwaps5m: 3
       });
       const start = Date.now();
-      const feed = (price, seconds, liquidity = 25000, volume = 500, swaps = 8) =>
+      const feed = (price, seconds, liquidity = 25000, volume = 500, swaps = 8, reserveA = 100000, reserveB = 1000000) =>
         monitor.ingest({ priceUsd: price, timestamp: start + seconds * 1000, liquidityUsd: liquidity,
-          volumeUsd5m: volume, swapCount5m: swaps, sourceConfirmed: true });
+          reserveA, reserveB, volumeUsd5m: volume, swapCount5m: swaps, sourceConfirmed: true });
 
       const results = [];
       results.push(["Reject tiny-liquidity spike", feed(0.0007, 0, 20, 1, 1).accepted === false]);
@@ -190,10 +205,10 @@ if (typeof document !== "undefined") {
       results.push(["Confirm 2× gain milestone", monitor.getState().alerts.some(a => a.type === "gain" && a.title === "2× gain milestone")]);
       feed(0.000018, 90); feed(0.000018, 105); feed(0.000018, 120);
       results.push(["Detect 10% peak reversal", monitor.getState().alerts.some(a => a.type === "peak" && a.title === "10% decline from verified high")]);
-      feed(0.000012, 130); feed(0.000012, 145, 18000); feed(0.000012, 160, 18000);
+      feed(0.000012, 130); feed(0.000012, 145, 18000, 500, 8, 90000, 900000); feed(0.000012, 160, 18000, 500, 8, 90000, 900000);
       feed(0.0000145, 170); feed(0.0000145, 185); feed(0.0000145, 200);
       results.push(["Detect recovery from verified low", monitor.getState().alerts.some(a => a.type === "recovery")]);
-      results.push(["Detect pool-liquidity reduction", monitor.getState().alerts.some(a => a.type === "liquidity")]);
+      results.push(["Detect proportional pool-reserve reduction", monitor.getState().alerts.some(a => a.type === "liquidity")]);
 
       const passed = results.filter(([, ok]) => ok).length;
       output.textContent = results.map(([name, ok]) => `${ok ? "PASS" : "FAIL"} — ${name}`).join("\n")
