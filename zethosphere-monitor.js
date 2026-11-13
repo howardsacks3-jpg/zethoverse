@@ -17,7 +17,8 @@ export const DEFAULT_CONFIG = Object.freeze({
   confirmationWindowMs: 30000,
   maxSampleGapMs: 60000,
   priceDeviationTolerancePct: 20,
-  reserveDropTolerancePct: 5
+  reserveDropTolerancePct: 5,
+  reserveConfirmationTolerancePct: 5
 });
 
 const pct = (value, base) => base > 0 ? ((value - base) / base) * 100 : 0;
@@ -67,7 +68,13 @@ export function createMarketMonitor(overrides = {}) {
     }
     const prices = recent.map(sample => sample.priceUsd).sort((a, b) => a - b);
     const median = prices[Math.floor(prices.length / 2)];
-    return recent.every(sample => Math.abs(pct(sample.priceUsd, median)) <= config.priceDeviationTolerancePct);
+    const pricesStable = recent.every(sample => Math.abs(pct(sample.priceUsd, median)) <= config.priceDeviationTolerancePct);
+    const reserveMedianA = [...recent.map(sample => sample.reserveA)].sort((a, b) => a - b)[Math.floor(recent.length / 2)];
+    const reserveMedianB = [...recent.map(sample => sample.reserveB)].sort((a, b) => a - b)[Math.floor(recent.length / 2)];
+    const reservesStable = recent.every(sample =>
+      Math.abs(pct(sample.reserveA, reserveMedianA)) <= config.reserveConfirmationTolerancePct &&
+      Math.abs(pct(sample.reserveB, reserveMedianB)) <= config.reserveConfirmationTolerancePct);
+    return pricesStable && reservesStable;
   }
 
   function evaluate(at) {
