@@ -67,3 +67,16 @@ test("rejects stale, duplicate and unconfirmed source samples", () => {
   monitor.ingest(sample(1, 2000));
   assert.equal(monitor.ingest(sample(1, 2000)).accepted, false);
 });
+
+test("detects a confirmed pool-liquidity reduction", () => {
+  const monitor = createMarketMonitor(config);
+  const withLiquidity = (priceUsd, timestamp, liquidityUsd) =>
+    sample(priceUsd, timestamp, { liquidityUsd });
+  monitor.ingest(withLiquidity(1, 1000, 5000));
+  monitor.ingest(withLiquidity(1, 16000, 5000));
+  monitor.ingest(withLiquidity(1, 31000, 5000));
+  monitor.ingest(withLiquidity(1, 50000, 4000));
+  monitor.ingest(withLiquidity(1, 65000, 4000));
+  monitor.ingest(withLiquidity(1, 80000, 4000));
+  assert.ok(monitor.getState().alerts.some(a => a.type === "liquidity" && a.title === "20% pool-liquidity reduction"));
+});
