@@ -184,7 +184,8 @@ export function createMarketMonitor(overrides = {}) {
       if (state.lastAcceptedAt !== null && snapshot.timestamp - state.lastAcceptedAt > config.maxSampleGapMs) {
         state.samples = [];
         state.lastGapAt = snapshot.timestamp;
-      }\n      state.samples.push({
+      }
+      state.samples.push({
         priceUsd: snapshot.priceUsd,
         timestamp: snapshot.timestamp,
         liquidityUsd: snapshot.liquidityUsd,
