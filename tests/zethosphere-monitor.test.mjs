@@ -164,3 +164,41 @@ test("reserve warning explicitly does not claim a confirmed LP withdrawal", () =
   assert.match(alert.title, /investigate/i);
   assert.match(alert.detail, /does NOT prove an LP withdrawal/i);
 });
+
+
+test("ordinary two-sided swaps do not create proportional-reserve withdrawal warnings", () => {
+  const monitor = createMarketMonitor(config);
+  const feed = (t, price, a, b) => monitor.ingest(sample(price, t, { reserveA: a, reserveB: b }), { now: t });
+  feed(100000, 1, 100000, 1000000);
+  feed(115000, 1, 100000, 1000000);
+  feed(130000, 1, 100000, 1000000);
+  // Illustrative ordinary swap direction: one reserve rises while the other falls.
+  feed(145000, 1.05, 108000, 930000);
+  feed(160000, 1.05, 108000, 930000);
+  feed(175000, 1.05, 108000, 930000);
+  assert.equal(monitor.getState(175000).alerts.some(a => a.type === "liquidity-change-suspected"), false);
+});
+
+test("price alerts confirm while pool reserves move during ordinary trading", () => {
+  const monitor = createMarketMonitor(config);
+  const feed = (price, t, a, b) => monitor.ingest(sample(price, t, { reserveA: a, reserveB: b }), { now: t });
+  feed(1, 100000, 100000, 1000000);
+  feed(1, 115000, 100000, 1000000);
+  feed(1, 130000, 100000, 1000000);
+  feed(2, 145000, 108000, 930000);
+  feed(2, 160000, 112000, 900000);
+  const result = feed(2, 175000, 115000, 875000);
+  assert.equal(result.confirmed, true);
+  assert.ok(monitor.getState(175000).alerts.some(a => a.type === "gain" && a.title === "2× gain milestone"));
+});
+
+test("requires a fresh complete confirmation window after feed interruption", () => {
+  const monitor = createMarketMonitor({ ...config, maxSampleGapMs: 60000 });
+  monitor.ingest(sample(1, 100000), { now: 100000 });
+  monitor.ingest(sample(1, 115000), { now: 115000 });
+  monitor.ingest(sample(1, 200001), { now: 200001 });
+  const second = monitor.ingest(sample(1, 215001), { now: 215001 });
+  assert.equal(second.confirmed, false);
+  const third = monitor.ingest(sample(1, 230001), { now: 230001 });
+  assert.equal(third.confirmed, true);
+});
