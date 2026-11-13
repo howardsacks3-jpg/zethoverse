@@ -69,12 +69,9 @@ export function createMarketMonitor(overrides = {}) {
     const prices = recent.map(sample => sample.priceUsd).sort((a, b) => a - b);
     const median = prices[Math.floor(prices.length / 2)];
     const pricesStable = recent.every(sample => Math.abs(pct(sample.priceUsd, median)) <= config.priceDeviationTolerancePct);
-    const reserveMedianA = [...recent.map(sample => sample.reserveA)].sort((a, b) => a - b)[Math.floor(recent.length / 2)];
-    const reserveMedianB = [...recent.map(sample => sample.reserveB)].sort((a, b) => a - b)[Math.floor(recent.length / 2)];
-    const reservesStable = recent.every(sample =>
-      Math.abs(pct(sample.reserveA, reserveMedianA)) <= config.reserveConfirmationTolerancePct &&
-      Math.abs(pct(sample.reserveB, reserveMedianB)) <= config.reserveConfirmationTolerancePct);
-    return pricesStable && reservesStable;
+    // Price confirmation must not depend on reserve stability: ordinary swaps
+    // can move reserves while a real price move remains valid.
+    return pricesStable;
   }
 
   function evaluate(at) {
@@ -85,7 +82,15 @@ export function createMarketMonitor(overrides = {}) {
     // A dollar-value decline alone is not evidence of liquidity removal.
     // Require both underlying pool reserves to fall proportionally between
     // confirmed snapshots; one-sided changes are treated as swaps/market activity.
-    if (state.previousConfirmedReserves !== null) {
+    const reserveSamples = state.samples.slice(-config.confirmations);
+    const reserveMedianA = [...reserveSamples.map(sample => sample.reserveA)].sort((a, b) => a - b)[Math.floor(reserveSamples.length / 2)];
+    const reserveMedianB = [...reserveSamples.map(sample => sample.reserveB)].sort((a, b) => a - b)[Math.floor(reserveSamples.length / 2)];
+    const reservesStable = reserveSamples.length === config.confirmations && reserveSamples.every(sample =>
+      Math.abs(pct(sample.reserveA, reserveMedianA)) <= config.reserveConfirmationTolerancePct &&
+      Math.abs(pct(sample.reserveB, reserveMedianB)) <= config.reserveConfirmationTolerancePct);
+
+    // Reserve stability is required only for the liquidity signal, never for price alerts.
+    if (reservesStable && state.previousConfirmedReserves !== null) {
       const previous = state.previousConfirmedReserves;
       const dropA = ((previous.reserveA - latest.reserveA) / previous.reserveA) * 100;
       const dropB = ((previous.reserveB - latest.reserveB) / previous.reserveB) * 100;
@@ -103,7 +108,7 @@ export function createMarketMonitor(overrides = {}) {
         }
       }
     }
-    state.previousConfirmedReserves = { reserveA: latest.reserveA, reserveB: latest.reserveB };
+    if (reservesStable) state.previousConfirmedReserves = { reserveA: latest.reserveA, reserveB: latest.reserveB };
 
     if (state.verifiedHighUsd === null || price > state.verifiedHighUsd) {
       const previousHigh = state.verifiedHighUsd;
