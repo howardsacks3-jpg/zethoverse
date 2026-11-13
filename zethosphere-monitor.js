@@ -9,6 +9,7 @@ export const DEFAULT_CONFIG = Object.freeze({
   gainMilestones: [2, 3, 5, 10, 20],
   peakDrawdownsPct: [5, 10, 15],
   lowRecoveriesPct: [10, 20],
+  liquidityDropPct: [10, 20],
   minLiquidityUsd: 0,
   minVolumeUsd5m: 0,
   minSwaps5m: 3,
@@ -27,6 +28,8 @@ export function createMarketMonitor(overrides = {}) {
     currentPriceUsd: null,
     verifiedHighUsd: null,
     verifiedLowUsd: null,
+    currentLiquidityUsd: null,
+    previousConfirmedLiquidityUsd: null,
     lastAcceptedAt: null,
     alerts: [],
     gainMilestonesSent: new Set(),
@@ -65,8 +68,22 @@ export function createMarketMonitor(overrides = {}) {
   }
 
   function evaluate(at) {
-    const price = state.samples[state.samples.length - 1].priceUsd;
+    const latest = state.samples[state.samples.length - 1];
+    const price = latest.priceUsd;
     state.currentPriceUsd = price;
+    state.currentLiquidityUsd = latest.liquidityUsd;
+    if (state.previousConfirmedLiquidityUsd !== null && latest.liquidityUsd < state.previousConfirmedLiquidityUsd) {
+      const drop = ((state.previousConfirmedLiquidityUsd - latest.liquidityUsd) / state.previousConfirmedLiquidityUsd) * 100;
+      for (const threshold of config.liquidityDropPct) {
+        if (drop + 1e-9 >= threshold) {
+          addAlert("liquidity", threshold >= 20 ? "urgent" : "warning",
+            `${threshold}% pool-liquidity reduction`,
+            `Confirmed pool liquidity fell ${drop.toFixed(2)}% from ${state.previousConfirmedLiquidityUsd} USD to ${latest.liquidityUsd} USD.`, at,
+            `liquidity-${threshold}-${state.previousConfirmedLiquidityUsd}-${latest.liquidityUsd}`);
+        }
+      }
+    }
+    state.previousConfirmedLiquidityUsd = latest.liquidityUsd;
 
     if (state.verifiedHighUsd === null || price > state.verifiedHighUsd) {
       const previousHigh = state.verifiedHighUsd;
@@ -139,6 +156,7 @@ export function createMarketMonitor(overrides = {}) {
         currentPriceUsd: state.currentPriceUsd,
         verifiedHighUsd: state.verifiedHighUsd,
         verifiedLowUsd: state.verifiedLowUsd,
+        currentLiquidityUsd: state.currentLiquidityUsd,
         lastAcceptedAt: state.lastAcceptedAt,
         alerts: state.alerts.map(({ key, ...alert }) => alert),
         acceptedSamples: state.samples.length
@@ -172,9 +190,10 @@ if (typeof document !== "undefined") {
       results.push(["Confirm 2× gain milestone", monitor.getState().alerts.some(a => a.type === "gain" && a.title === "2× gain milestone")]);
       feed(0.000018, 90); feed(0.000018, 105); feed(0.000018, 120);
       results.push(["Detect 10% peak reversal", monitor.getState().alerts.some(a => a.type === "peak" && a.title === "10% decline from verified high")]);
-      feed(0.000012, 130); feed(0.000012, 145); feed(0.000012, 160);
+      feed(0.000012, 130); feed(0.000012, 145, 18000); feed(0.000012, 160, 18000);
       feed(0.0000145, 170); feed(0.0000145, 185); feed(0.0000145, 200);
       results.push(["Detect recovery from verified low", monitor.getState().alerts.some(a => a.type === "recovery")]);
+      results.push(["Detect pool-liquidity reduction", monitor.getState().alerts.some(a => a.type === "liquidity")]);
 
       const passed = results.filter(([, ok]) => ok).length;
       output.textContent = results.map(([name, ok]) => `${ok ? "PASS" : "FAIL"} — ${name}`).join("\n")
@@ -185,6 +204,7 @@ if (typeof document !== "undefined") {
       document.getElementById("monitor-high").textContent = money(state.verifiedHighUsd);
       document.getElementById("monitor-low").textContent = money(state.verifiedLowUsd);
       document.getElementById("monitor-current").textContent = money(state.currentPriceUsd);
+      document.getElementById("monitor-liquidity").textContent = state.currentLiquidityUsd === null ? "—" : "$" + state.currentLiquidityUsd.toLocaleString("en-US", { maximumFractionDigits: 2 });
       const alertList = document.getElementById("monitor-alert-list");
       if (alertList) alertList.textContent = state.alerts.length
         ? state.alerts.map(alert => `[${alert.severity.toUpperCase()}] ${alert.title}\n${alert.detail}`).join("\n\n")
