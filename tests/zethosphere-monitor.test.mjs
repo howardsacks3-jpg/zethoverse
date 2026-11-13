@@ -6,7 +6,10 @@ const config = {
   baselinePriceUsd: 1,
   minLiquidityUsd: 1000,
   minVolumeUsd5m: 10,
-  minSwaps5m: 3
+  minSwaps5m: 3,
+  maxSnapshotAgeMs: Infinity,
+  futureTimestampToleranceMs: Infinity,
+  offlineAfterMs: 90000
 };
 const sample = (priceUsd, timestamp, extra = {}) => ({
   priceUsd, timestamp, liquidityUsd: 5000, reserveA: 100000, reserveB: 1000000, volumeUsd5m: 100,
@@ -78,7 +81,7 @@ test("detects a confirmed pool-liquidity reduction", () => {
   monitor.ingest(withLiquidity(1, 50000, 4000, 80000, 800000));
   monitor.ingest(withLiquidity(1, 65000, 4000, 80000, 800000));
   monitor.ingest(withLiquidity(1, 80000, 4000, 80000, 800000));
-  assert.ok(monitor.getState().alerts.some(a => a.type === "liquidity" && a.title === "20% pool-liquidity reduction"));
+  assert.ok(monitor.getState().alerts.some(a => a.type === "liquidity-change-suspected" && a.title === "20% pool-liquidity reduction"));
 });
 
 
@@ -108,4 +111,56 @@ test("rejects snapshots without verified underlying reserves", () => {
   const result = monitor.ingest(sample(1, 1000, { reserveA: undefined, reserveB: undefined }));
   assert.equal(result.accepted, false);
   assert.match(result.reason, /reserves unavailable/i);
+});
+
+
+test("rejects stale and future-dated snapshots using an injected clock", () => {
+  const monitor = createMarketMonitor({ ...config, maxSnapshotAgeMs: 30000, futureTimestampToleranceMs: 2000 });
+  const base = sample(1, 100000);
+  assert.equal(monitor.ingest(base, { now: 140001 }).reason, "Snapshot is stale");
+  assert.equal(monitor.ingest(sample(1, 105000), { now: 100000 }).reason, "Timestamp is too far in the future");
+  assert.equal(monitor.ingest(sample(1, 99000), { now: 100000 }).accepted, true);
+});
+
+test("reports OFFLINE before first data and DEGRADED after feed becomes stale", () => {
+  const monitor = createMarketMonitor({ ...config, offlineAfterMs: 30000 });
+  assert.equal(monitor.getState(100000).health, "OFFLINE");
+  monitor.ingest(sample(1, 100000), { now: 100000 });
+  assert.equal(monitor.getState(120000).health, "ONLINE");
+  assert.equal(monitor.getState(140001).health, "DEGRADED");
+});
+
+test("resets confirmation samples after a long feed gap", () => {
+  const monitor = createMarketMonitor({ ...config, maxSampleGapMs: 60000 });
+  monitor.ingest(sample(1, 100000), { now: 100000 });
+  monitor.ingest(sample(1, 115000), { now: 115000 });
+  const recovered = monitor.ingest(sample(1, 200001), { now: 200001 });
+  assert.equal(recovered.confirmed, false);
+  assert.equal(recovered.state.lastGapAt, 200001);
+});
+
+test("cumulative small proportional reserve reductions are not hidden by re-anchoring", () => {
+  const monitor = createMarketMonitor(config);
+  const feed = (t, a, b) => monitor.ingest(sample(1, t, { reserveA: a, reserveB: b }), { now: t });
+  feed(100000, 100000, 1000000);
+  feed(115000, 100000, 1000000);
+  feed(130000, 100000, 1000000);
+  feed(145000, 96000, 960000);
+  feed(160000, 96000, 960000);
+  feed(175000, 96000, 960000);
+  feed(190000, 90000, 900000);
+  feed(205000, 90000, 900000);
+  feed(220000, 90000, 900000);
+  assert.ok(monitor.getState(220000).alerts.some(a => a.type === "liquidity-change-suspected"));
+});
+
+test("reserve warning explicitly does not claim a confirmed LP withdrawal", () => {
+  const monitor = createMarketMonitor(config);
+  const feed = (t, a, b) => monitor.ingest(sample(1, t, { reserveA: a, reserveB: b }), { now: t });
+  feed(100000, 100000, 1000000); feed(115000, 100000, 1000000); feed(130000, 100000, 1000000);
+  feed(145000, 80000, 800000); feed(160000, 80000, 800000); feed(175000, 80000, 800000);
+  const alert = monitor.getState(175000).alerts.find(a => a.type === "liquidity-change-suspected");
+  assert.ok(alert);
+  assert.match(alert.title, /investigate/i);
+  assert.match(alert.detail, /does NOT prove an LP withdrawal/i);
 });
