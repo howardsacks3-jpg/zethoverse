@@ -94,7 +94,7 @@ export function createMarketMonitor(overrides = {}) {
     if (state.verifiedHighUsd > 0) {
       const drawdown = ((state.verifiedHighUsd - price) / state.verifiedHighUsd) * 100;
       for (const threshold of config.peakDrawdownsPct) {
-        if (drawdown >= threshold && !state.peakAlertsSent.has(threshold)) {
+        if (drawdown + 1e-9 >= threshold && !state.peakAlertsSent.has(threshold)) {
           state.peakAlertsSent.add(threshold);
           addAlert("peak", threshold >= 15 ? "urgent" : "warning",
             `${threshold}% decline from verified high`,
@@ -107,7 +107,7 @@ export function createMarketMonitor(overrides = {}) {
     if (state.verifiedLowUsd > 0) {
       const recovery = ((price - state.verifiedLowUsd) / state.verifiedLowUsd) * 100;
       for (const threshold of config.lowRecoveriesPct) {
-        if (recovery >= threshold && !state.lowAlertsSent.has(threshold)) {
+        if (recovery + 1e-9 >= threshold && !state.lowAlertsSent.has(threshold)) {
           state.lowAlertsSent.add(threshold);
           addAlert("recovery", "info", `${threshold}% recovery from verified low`,
             `Price is ${recovery.toFixed(2)}% above the verified low of ${state.verifiedLowUsd} USD.`, at,
