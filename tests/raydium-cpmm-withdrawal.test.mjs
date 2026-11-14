@@ -39,7 +39,7 @@ function u64(value) {
 }
 function makeEvent(changeType = 1, eventPool = pool.poolId) {
   const bytes = Buffer.concat([
-    Buffer.from("7e7a24ea195b77d2", "hex"),
+    Buffer.from("79a3cdc939da753c", "hex"),
     Buffer.from(decodeKey(eventPool)),
     u64(1000000), u64(500000), u64(600000),
     u64(50000), u64(60000), u64(0), u64(0),
