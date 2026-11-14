@@ -1,0 +1,13 @@
+name = "zethosphere-raydium-readonly"
+main = "server/raydium-worker.js"
+compatibility_date = "2026-11-14"
+workers_dev = true
+
+# Configure secrets/variables separately:
+# wrangler secret put SOLANA_RPC_URL
+# wrangler secret put API_BEARER_TOKEN
+# wrangler secret put POOL_ID
+# wrangler secret put TOKEN0_MINT
+# wrangler secret put TOKEN1_MINT
+# wrangler secret put TOKEN0_VAULT
+# wrangler secret put TOKEN1_VAULT
