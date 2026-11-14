@@ -73,7 +73,7 @@ function transaction({ event = makeEvent(), err = null, data = "withdraw", targe
   ];
   return {
     slot: 123456,
-    transaction: { signatures: ["5".repeat(88)], message: { accountKeys, instructions: [instruction] } },
+    transaction: { signatures: [encodeBase58(Uint8Array.from({ length: 64 }, (_, i) => i + 1))], message: { accountKeys, instructions: [instruction] } },
     meta: { err, logMessages: logs, innerInstructions: [], loadedAddresses: { writable: [], readonly: [] } }
   };
 }
