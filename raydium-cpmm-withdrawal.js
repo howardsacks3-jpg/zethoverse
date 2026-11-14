@@ -147,6 +147,10 @@ export function verifyRaydiumCpmmWithdrawal(transaction, expectedPool, options =
   if (!Number.isInteger(transaction?.slot) || transaction.slot < 0) failures.push("Transaction slot is missing");
   const signature = transaction?.transaction?.signatures?.[0];
   if (typeof signature !== "string" || !signature) failures.push("Transaction signature is missing");
+  else {
+    try { if (decodeBase58(signature).length !== 64) failures.push("Transaction signature is not a 64-byte Solana signature"); }
+    catch { failures.push("Transaction signature is not valid base58"); }
+  }
   if (failures.length) return { confirmed: false, reason: failures.join("; ") };
 
   const keys = accountKeyStrings(transaction.transaction.message, transaction.meta);
