@@ -40,23 +40,29 @@ footer{text-align:center;padding:28px 18px;border-top:1px solid var(--line);colo
 <header>
 <a class="logo" href="index.html">ZETHOVERSE</a>
 <nav aria-label="Main navigation">
-<a href="index.html">Home</a><a href="about.html">About</a><a href="litepaper.html">Litepaper</a>
-<a href="coin.html">The Coin · ZETHO</a><a href="token-transparency.html">Transparency &amp; Vesting</a>
-<a href="roadmap.html">Roadmap</a><a href="faq.html">FAQ</a><a href="disclaimer.html">Legal</a>
+<a href="index.html">Home</a>
+<a href="about.html">ZETHOVERSE</a>
+<a href="coin.html">The Coin · ZETHO</a>
+<a href="token-transparency.html">Transparency &amp; Vesting</a>
+<a href="zethosphere.html">Zethosphere</a>
+<a href="roadmap.html">Roadmap</a>
+<a href="litepaper.html">Litepaper</a>
+<a href="faq.html">FAQ</a>
+<a href="disclaimer.html">Legal</a>
 </nav>
 </header>
 <div class="hero">
 <div class="eyebrow">Public token information · ZETHO</div>
 <h1>ZETHO TOKEN TRANSPARENCY &amp; VESTING</h1>
-<p>Supply, allocation, founder-release safeguards, public records and the proposed launch-price mechanism — presented in one place for public inspection.</p>
-<p class="status">WORKING FRAMEWORK · NOT YET DEPLOYED</p>
+<p>Supply, allocation, founder-release safeguards, public records and current Mainnet status — presented in one place for public inspection.</p>
+<p class="status">SELECTED PROJECT FRAMEWORK · MAINNET NOT LAUNCHED</p>
 </div>
 <main>
-<div class="notice"><strong>Important status notice:</strong> This page records the current working framework and design commitments selected during project development. It is not evidence that a token has been minted, a vesting program or vault has been deployed, liquidity has been added, or any token has been released. No official ZETHO coin has launched or been offered for sale. Final implementation, independent technical review and any required legal review must take place before launch. Only on-chain records can prove that a transaction occurred.</div>
+<div class="notice"><strong>Important status notice:</strong> This page records the selected ZETHO supply and allocation framework and the current state of implementation. The Solana programs have been built and tested on Devnet. The Devnet mint and program accounts are not a Mainnet token or Mainnet deployment. No Mainnet mint has been created, no Mainnet vesting vault has been deployed, no public sale is open or funded, and no liquidity pool has been created. No independent professional security audit has been commissioned. Only Mainnet on-chain records can prove that production transactions have occurred.</div>
 
 <section id="supply">
-<h2>1. Proposed token supply and allocation</h2>
-<p>The current working model is a fixed total supply of <strong>5,000,000,000 ZETHO</strong>, with <strong>9 decimal places</strong>. Solana is the proposed production blockchain. These are working project parameters, not yet deployed or irrevocably finalised.</p>
+<h2>1. Selected token supply and allocation</h2>
+<p>The selected project framework is a total supply of <strong>5,000,000,000 ZETHO</strong>, with <strong>9 decimal places</strong>, on Solana. This describes the intended Mainnet token design; the Mainnet mint has not been created.</p>
 <table>
 <thead><tr><th>Allocation</th><th>Share</th><th>Quantity</th><th>Intended purpose</th></tr></thead>
 <tbody>
@@ -73,46 +79,35 @@ footer{text-align:center;padding:28px 18px;border-top:1px solid var(--line);colo
 
 <section id="vesting">
 <h2>2. Founder vesting schedule</h2>
-<p>The current selected working schedule divides the 1.5 billion founder allocation into a normal vesting portion of <strong>1.35 billion ZETHO (90%)</strong> and a separately restricted exceptional-release allowance of <strong>150 million ZETHO (10%)</strong>.</p>
+<p>The 1.5 billion ZETHO founder allocation is divided into an ordinary vesting portion of <strong>1.35 billion ZETHO (90%)</strong> and a separately restricted exceptional reserve of <strong>150 million ZETHO (10%)</strong>.</p>
 <div class="panel">
 <h3>Normal founder vesting</h3>
-<table>
-<tbody>
+<table><tbody>
 <tr><th>Normal vesting pool</th><td>1,350,000,000 ZETHO</td></tr>
-<tr><th>Number of monthly instalments</th><td>36</td></tr>
-<tr><th>Each scheduled instalment</th><td><strong>37,500,000 ZETHO</strong></td></tr>
-<tr><th>First scheduled transfer</th><td>One calendar month after the official launch date</td></tr>
+<tr><th>Total vesting period</th><td>36 months, including the 12-month cliff</td></tr>
+<tr><th>Number of monthly instalments after cliff</th><td>24</td></tr>
+<tr><th>Each scheduled instalment</th><td><strong>56,250,000 ZETHO</strong></td></tr>
+<tr><th>First scheduled transfer</th><td>Month 13 after the official launch date</td></tr>
 <tr><th>Launch-day founder transfer</th><td>None under this schedule</td></tr>
-</tbody>
-</table>
-<p>The first instalment is due one calendar month after launch, followed by 35 further monthly instalments. The intended mechanism is an automatic on-chain transfer to the published founder destination wallet when an instalment becomes due. The destination wallet and exact schedule must be published before launch.</p>
+</tbody></table>
+<p>The selected schedule has a 12-month cliff within a 36-month total vesting period. The first monthly instalment is due at month 13, followed by 23 further monthly instalments. The intended mechanism is an on-chain vesting vault controlled by the vesting program. A transaction must be submitted when an instalment becomes due; Solana programs do not execute themselves. The program must independently check the due date, permitted amount, destination and whether that instalment has already been paid.</p>
 </div>
 <h3>How scheduled releases will be executed</h3>
 <ul>
-<li>The normal vesting pool is to be held in a dedicated on-chain vesting vault controlled by the vesting program, not by an unrestricted creator withdrawal key.</li>
-<li>A scheduled execution service (a keeper) submits the transaction when an instalment is due. Solana programs do not wake themselves up; a transaction must be submitted to the network. The keeper pays the transaction fee.</li>
-<li>The program must independently check the due date, permitted amount, destination and whether that instalment has already been paid.</li>
-<li>Each instalment may be paid only once. Duplicate keeper submissions must not create duplicate transfers.</li>
-<li>If an execution is missed or delayed, the overdue instalment remains due. The next successful execution must catch up the overdue instalment rather than silently skip it. Overdue instalments should be processed individually under the published rules, not turned into an unrestricted discretionary withdrawal.</li>
-<li>A monitored primary keeper and an independent backup execution path should be arranged. The program must remain the authority for whether a release is valid.</li>
-<li>Before mainnet launch, the program must be tested and independently security-reviewed. A public dashboard is a display of blockchain data; it is not a substitute for the on-chain record.</li>
+<li>The ordinary vesting pool is intended to be held in a dedicated on-chain vault controlled by the vesting program, not by an unrestricted creator withdrawal key.</li>
+<li>A keeper submits the transaction when an instalment is due and pays the transaction fee. The program, not the keeper, determines whether the release is valid.</li>
+<li>Each instalment may be paid only once. Duplicate submissions must not create duplicate transfers.</li>
+<li>If execution is delayed, the overdue instalment must remain visible and be handled under the published schedule; a delay must not silently erase or accelerate an instalment.</li>
 </ul>
-<div class="notice"><strong>Reliability commitment:</strong> Releases must be administered diligently, timely, reliably and consistently. Negligent failure by the creator or designated operator to carry out the published schedule, without a valid and publicly explained reason, is a breach of ZETHOVERSE's published project rules. Whether conduct also constitutes a breach of law or regulatory obligation depends on the applicable law and facts.</div>
+<p class="small">The vesting program has been tested on Devnet. No independent professional security audit has been commissioned, and internal testing must not be described as an independent audit. A public dashboard is a display of blockchain data; it is not a substitute for the on-chain record.</p>
+<p><strong>Reliability commitment:</strong> Releases are intended to be administered diligently, timely, reliably and consistently. Any material delay should be explained publicly.</p>
 </section>
-
 <section id="exceptional">
-<h2>3. Exceptional early-release allowance</h2>
-<p>A maximum of <strong>150,000,000 ZETHO</strong> — 10% of the founder allocation — is being kept separate from the normal monthly vesting pool as a possible exceptional early-release allowance. It is not an automatic payment, an unrestricted founder withdrawal right, or permission to release tokens whenever the market price rises.</p>
-<ul>
-<li>A price peak by itself is not proof of sustainable demand.</li>
-<li>Any qualifying release must depend on clear market-health criteria, observation periods and a transparent decision process published before launch.</li>
-<li>The amount released under this provision must never exceed the published cumulative cap.</li>
-<li>Every exceptional release must be publicly identified with its amount, date, reason and on-chain transaction reference.</li>
-<li>Any unused portion remains locked. It does not automatically become available to the founder after the 36 monthly instalments have finished.</li>
-</ul>
-<p class="small">The detailed qualifying tests, authorisation method and technical implementation for exceptional releases remain to be finalised. Until those rules are published and implemented, no exceptional release should be treated as available or authorised.</p>
+<h2>3. Restricted exceptional reserve</h2>
+<p>A maximum of <strong>150,000,000 ZETHO</strong> — 10% of the founder allocation — is reserved separately from the ordinary vesting pool. This exceptional reserve is currently <strong>disabled and unavailable for release</strong>.</p>
+<p>It is not an automatic payment, an unrestricted founder withdrawal right, or permission to release tokens whenever the market price rises. No exceptional release may occur unless separate independent protections and review are established, the qualifying rules and authorisation process are approved and publicly disclosed, and the technical implementation is separately authorised.</p>
+<p>Until those conditions are met, the entire reserve remains unavailable. It does not automatically become available to the founder after the ordinary vesting period.</p>
 </section>
-
 <section id="public-record">
 <h2>4. Public release records — how everyone can verify</h2>
 <p>The public must be able to see what was scheduled, what was actually released, when it happened, how much moved and where it went. Transparency must be built into the on-chain design and reflected on this permanent website page; it must not depend only on announcements or a manually maintained spreadsheet.</p>
@@ -184,11 +179,6 @@ footer{text-align:center;padding:28px 18px;border-top:1px solid var(--line);colo
 <p class="small">Last updated: 7 November 2026 · ZETHOVERSE · One tiny universe. Everyone connected.</p>
 </section>
 </main>
-<footer>
-<p style="color:#e4c477;letter-spacing:3px;font-weight:bold">ZETHOVERSE</p>
-<p>One tiny universe. Everyone connected.</p>
-<p><a href="index.html">Home</a> · <a href="litepaper.html">Litepaper</a> · <a href="roadmap.html">Roadmap</a> · <a href="faq.html">FAQ</a> · <a href="disclaimer.html">Legal</a></p>
-<p>© 2026 ZETHOVERSE · Informational purposes only. No official coin is currently offered for sale.</p>
-</footer>
+<footer><p style="color:#e4c477;letter-spacing:3px;font-weight:bold">ZETHOVERSE</p><p>One tiny universe. Everyone connected.</p><p><a href="index.html">Home</a> · <a href="about.html">ZETHOVERSE</a> · <a href="coin.html">The Coin · ZETHO</a> · <a href="token-transparency.html">Transparency &amp; Vesting</a> · <a href="zethosphere.html">Zethosphere</a> · <a href="roadmap.html">Roadmap</a> · <a href="litepaper.html">Litepaper</a> · <a href="faq.html">FAQ</a> · <a href="disclaimer.html">Legal</a></p><p>© 2026 ZETHOVERSE · Informational purposes only. No official coin is currently offered for sale.</p></footer>
 </body>
 </html>
