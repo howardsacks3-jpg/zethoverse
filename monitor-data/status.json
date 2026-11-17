@@ -1,0 +1,49 @@
+{
+  "generatedAt": "2026-11-17T11:57:43.340Z",
+  "lastSuccessfulScan": null,
+  "mode": "READ_ONLY",
+  "health": "WAITING_FOR_CONFIGURATION",
+  "rpcEndpoint": "public Solana RPC endpoint",
+  "mintConfigured": false,
+  "addressesConfigured": false,
+  "programsConfigured": false,
+  "emailConfigured": false,
+  "emailDeliveryVerified": false,
+  "checks": [
+    {
+      "name": "Solana mainnet RPC",
+      "status": "PASS",
+      "genesisHash": "5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d",
+      "checkedAt": "2026-11-17T11:57:43.339Z"
+    },
+    {
+      "name": "Official ZETHO mint",
+      "status": "WAITING",
+      "detail": "Verified mainnet mint address is not configured"
+    },
+    {
+      "name": "Project address register",
+      "status": "WAITING",
+      "detail": "No independently verified project addresses configured"
+    },
+    {
+      "name": "Program address register",
+      "status": "WAITING",
+      "detail": "No verified mainnet program IDs configured"
+    },
+    {
+      "name": "Email alert delivery",
+      "status": "WAITING",
+      "detail": "Configure RESEND_API_KEY, ALERT_EMAIL_TO and ALERT_EMAIL_FROM",
+      "checkedAt": "2026-11-17T11:57:43.340Z"
+    },
+    {
+      "name": "Dedicated RPC provider",
+      "status": "WAITING",
+      "detail": "Configure SOLANA_RPC_URL; public RPC is for limited testing, not production monitoring"
+    }
+  ],
+  "events": [],
+  "pendingAlerts": 0,
+  "notice": "Monitoring is not fully operational. Missing configuration, failed checks or delivery problems must not be interpreted as safe."
+}
