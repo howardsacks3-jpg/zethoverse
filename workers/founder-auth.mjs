@@ -42,6 +42,12 @@ async function handle(request,env){
  }
  if(url.pathname==='/api/founder/logout'&&request.method==='POST')return response({authenticated:false},200,{'set-cookie':COOKIE+'=; HttpOnly; Secure; SameSite=Strict; Path=/api/founder; Max-Age=0'});
  if(url.pathname==='/api/founder/session'&&request.method==='GET')return response({authenticated:await validSession(request,env)});
+ if(url.pathname==='/api/founder/monitor-status'&&request.method==='GET'){
+  if(!await validSession(request,env))return response({error:'Unauthorized'},401);
+  if(!env.MONITOR_STATUS_URL)return response({error:'Founder monitor status source is not configured'},503);
+  try{const upstream=await fetch(env.MONITOR_STATUS_URL,{headers:{'cache-control':'no-cache'}});if(!upstream.ok)return response({error:'Monitor status source unavailable'},502);return response(await upstream.json());}
+  catch{return response({error:'Monitor status source unavailable'},502);}
+ }
  return response({error:'Not found'},404);
 }
 export {passwordMatches,validSession,handle};
