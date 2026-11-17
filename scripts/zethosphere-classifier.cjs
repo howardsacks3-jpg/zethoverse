@@ -20,7 +20,23 @@ function classifyTransaction(tx, signature, mint){
  const burning=targetEvent&&types.some(t=>t==='burn'||t==='burnChecked');
  const swap=(programIds.some(p=>SWAP_PROGRAMS.has(p)) || logs.some(l=>/Instruction: (Swap|SwapV2)/i.test(l)))&&(!targetMint||targetTokenMovement);
  const transfers=parsed.filter(p=>p.type==='transfer'||p.type==='transferChecked');
- const transferAmount=transfers.reduce((sum,p)=>{const raw=p.info?.amount??p.info?.tokenAmount?.amount??'0';try{return sum+BigInt(raw);}catch{return sum;}},0n);
+ const explicitTargetTransferAmount=transfers.reduce((sum,p)=>{
+  if(targetMint&&p.info?.mint!==targetMint)return sum;
+  const raw=p.info?.amount??p.info?.tokenAmount?.amount??'0';
+  try{return sum+BigInt(raw);}catch{return sum;}
+ },0n);
+ const targetBalanceMovement=targetMint?((tx?.meta?.preTokenBalances||[]).concat(tx?.meta?.postTokenBalances||[])
+  .filter(b=>b.mint===targetMint)
+  .reduce((sum,b,index,all)=>{
+   const first=all.findIndex(x=>x.accountIndex===b.accountIndex&&x.mint===b.mint);
+   if(first!==index)return sum;
+   const pre=tx?.meta?.preTokenBalances||[],post=tx?.meta?.postTokenBalances||[];
+   const before=pre.find(x=>x.accountIndex===b.accountIndex&&x.mint===b.mint);
+   const after=post.find(x=>x.accountIndex===b.accountIndex&&x.mint===b.mint);
+   const delta=BigInt(after?.uiTokenAmount?.amount||'0')-BigInt(before?.uiTokenAmount?.amount||'0');
+   return sum+(delta<0n?-delta:delta);
+  },0n)/2n):0n;
+ const transferAmount=explicitTargetTransferAmount||targetBalanceMovement;
  const alertThreshold=BigInt(process.env.ZETHO_LARGE_TRANSFER_THRESHOLD||'100000000000000');
  if(authority){type='TOKEN_AUTHORITY_CHANGE';severity='CRITICAL';message='Token authority change instruction detected';}
  else if(minting){type='TOKEN_MINT';severity='CRITICAL';message='Token mint instruction detected';}
