@@ -48,7 +48,9 @@ jobs:
       - uses: actions/checkout@v4
         with:
           # Generate status from the same immutable commit that passed tests.
+          # Full history is needed for safe rebases onto a moving branch tip.
           ref: ${{ github.sha }}
+          fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
           node-version: 22
