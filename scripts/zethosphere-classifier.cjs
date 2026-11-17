@@ -20,12 +20,14 @@ function classifyTransaction(tx, signature, mint){
  const burning=targetEvent&&types.some(t=>t==='burn'||t==='burnChecked');
  const swap=(programIds.some(p=>SWAP_PROGRAMS.has(p)) || logs.some(l=>/Instruction: (Swap|SwapV2)/i.test(l)))&&(!targetMint||targetTokenMovement);
  const transfers=parsed.filter(p=>p.type==='transfer'||p.type==='transferChecked');
+ const transferAmount=transfers.reduce((sum,p)=>{const raw=p.info?.amount??p.info?.tokenAmount?.amount??'0';try{return sum+BigInt(raw);}catch{return sum;}},0n);
+ const alertThreshold=BigInt(process.env.ZETHO_LARGE_TRANSFER_THRESHOLD||'100000000000000');
  if(authority){type='TOKEN_AUTHORITY_CHANGE';severity='CRITICAL';message='Token authority change instruction detected';}
  else if(minting){type='TOKEN_MINT';severity='CRITICAL';message='Token mint instruction detected';}
  else if(burning){type='TOKEN_BURN';severity='WARNING';message='Token burn instruction detected';}
  else if(swap){type='SWAP';severity='INFO';message='Swap-like program invocation detected; amounts require balance-delta verification';}
- else if(transfers.length&&targetEvent){type='TOKEN_TRANSFER';severity='WARNING';message='Token transfer involving monitored mint detected';}
- else if(tx?.meta?.err){type='FAILED_TRANSACTION';severity='WARNING';message='Transaction failed on chain';}
+ else if(transfers.length&&targetEvent){type='TOKEN_TRANSFER';severity=transferAmount>=alertThreshold?'WARNING':'INFO';message=severity==='WARNING'?'Large token transfer involving monitored mint detected':'Token transfer involving monitored mint detected';}
+ else if(tx?.meta?.err){type='FAILED_TRANSACTION';severity='INFO';message='Transaction failed on chain';}
  const pre=tx?.meta?.preTokenBalances||[], post=tx?.meta?.postTokenBalances||[];
  const deltas=[];
  for(const b of post){const before=pre.find(x=>x.accountIndex===b.accountIndex&&x.mint===b.mint);const a=BigInt(b.uiTokenAmount?.amount||'0');const z=BigInt(before?.uiTokenAmount?.amount||'0');const delta=a-z;if(delta!==0n)deltas.push({accountIndex:b.accountIndex,mint:b.mint,delta:delta.toString(),decimals:b.uiTokenAmount?.decimals??0});}
