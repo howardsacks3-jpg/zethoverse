@@ -2,7 +2,6 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {webcrypto} from 'node:crypto';
 import {passwordMatches,validSession,handle} from '../workers/founder-auth.mjs';
-globalThis.crypto=webcrypto;
 const enc=new TextEncoder();
 const b64u=b=>Buffer.from(b).toString('base64url');
 async function hash(password){const salt=webcrypto.getRandomValues(new Uint8Array(16));const key=await webcrypto.subtle.importKey('raw',enc.encode(password),'PBKDF2',false,['deriveBits']);const bits=await webcrypto.subtle.deriveBits({name:'PBKDF2',salt,iterations:310000,hash:'SHA-256'},key,256);return b64u(salt)+':'+b64u(bits);}
