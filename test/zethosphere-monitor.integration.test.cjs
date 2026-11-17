@@ -29,7 +29,7 @@ test('monitor establishes a baseline, detects new token activity and publishes h
  const dir=fs.mkdtempSync(path.join(os.tmpdir(),'zethosphere-'));t.after(()=>fs.rmSync(dir,{recursive:true,force:true}));
  const address='11111111111111111111111111111111';
  const env={...process.env,SOLANA_RPC_URL:'http://127.0.0.1:'+server.address().port,ZETHO_MINT_ADDRESS:address,ZETHO_MONITOR_ADDRESSES:address,ZETHO_PROGRAM_ADDRESSES:'22222222222222222222222222222222'};
- const run=()=>{const r=spawnSync(process.execPath,['scripts/zethosphere-monitor.cjs'],{cwd:dir,env,encoding:'utf8'});assert.equal(r.status,0,r.stderr||r.stdout);};
+ const run=()=>{const r=spawnSync(process.execPath,[path.join(ROOT,'scripts/zethosphere-monitor.cjs')],{cwd:dir,env,encoding:'utf8'});assert.equal(r.status,0,r.stderr||r.stdout);};
  run();
  let state=JSON.parse(fs.readFileSync(path.join(dir,'monitor-data/events.json'),'utf8'));
  assert.equal(state.events.length,0);
