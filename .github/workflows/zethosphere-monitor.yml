@@ -32,11 +32,11 @@ jobs:
       - name: Run unit and safety tests
         run: node --test test/*.test.cjs test/*.test.mjs
       - name: Send real email delivery test
-        if: \${{ github.event_name == 'workflow_dispatch' && inputs.test_email }}
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.test_email }}
         env:
-          RESEND_API_KEY: \${{ secrets.RESEND_API_KEY }}
-          ALERT_EMAIL_TO: \${{ vars.ALERT_EMAIL_TO }}
-          ALERT_EMAIL_FROM: \${{ vars.ALERT_EMAIL_FROM }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          ALERT_EMAIL_TO: ${{ vars.ALERT_EMAIL_TO }}
+          ALERT_EMAIL_FROM: ${{ vars.ALERT_EMAIL_FROM }}
         run: node scripts/test-alert-email.cjs
   monitor:
     needs: test
@@ -51,12 +51,12 @@ jobs:
           node-version: 22
       - name: Run read-only monitor
         env:
-          SOLANA_RPC_URL: \${{ secrets.SOLANA_RPC_URL }}
-          ZETHO_MINT_ADDRESS: \${{ vars.ZETHO_MINT_ADDRESS }}
-          ZETHO_MONITOR_ADDRESSES: \${{ vars.ZETHO_MONITOR_ADDRESSES }}
-          RESEND_API_KEY: \${{ secrets.RESEND_API_KEY }}
-          ALERT_EMAIL_TO: \${{ vars.ALERT_EMAIL_TO }}
-          ALERT_EMAIL_FROM: \${{ vars.ALERT_EMAIL_FROM }}
+          SOLANA_RPC_URL: ${{ secrets.SOLANA_RPC_URL }}
+          ZETHO_MINT_ADDRESS: ${{ vars.ZETHO_MINT_ADDRESS }}
+          ZETHO_MONITOR_ADDRESSES: ${{ vars.ZETHO_MONITOR_ADDRESSES }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          ALERT_EMAIL_TO: ${{ vars.ALERT_EMAIL_TO }}
+          ALERT_EMAIL_FROM: ${{ vars.ALERT_EMAIL_FROM }}
         run: node scripts/zethosphere-monitor.cjs
       - name: Publish status and event history
         run: |
