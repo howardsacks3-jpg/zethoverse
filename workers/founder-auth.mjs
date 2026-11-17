@@ -3,11 +3,13 @@ const encoder=new TextEncoder();
 const b64u=(bytes)=>btoa(String.fromCharCode(...new Uint8Array(bytes))).replace(/=/g,'').replace(/\+/g,'-').replace(/\//g,'_');
 const unb64u=(s)=>Uint8Array.from(atob(s.replace(/-/g,'+').replace(/_/g,'/')),c=>c.charCodeAt(0));
 async function hmac(secret,data){const key=await crypto.subtle.importKey('raw',encoder.encode(secret),{name:'HMAC',hash:'SHA-256'},false,['sign','verify']);return new Uint8Array(await crypto.subtle.sign('HMAC',key,encoder.encode(data)));}
+function constantTimeEqual(a,b){const x=encoder.encode(String(a)),y=encoder.encode(String(b));let diff=x.length^y.length;for(let i=0;i<Math.max(x.length,y.length);i++)diff|=(x[i]||0)^(y[i]||0);return diff===0;}
+async function validHmac(secret,data,signature){try{const key=await crypto.subtle.importKey('raw',encoder.encode(secret),{name:'HMAC',hash:'SHA-256'},false,['verify']);return await crypto.subtle.verify('HMAC',key,unb64u(signature),encoder.encode(data));}catch{return false;}}
 async function passwordMatches(password,stored){
  const [salt,expected]=String(stored||'').split(':');if(!salt||!expected)return false;
  const key=await crypto.subtle.importKey('raw',encoder.encode(password),'PBKDF2',false,['deriveBits']);
  const bits=await crypto.subtle.deriveBits({name:'PBKDF2',salt:unb64u(salt),iterations:310000,hash:'SHA-256'},key,256);
- return b64u(bits)===expected;
+ return constantTimeEqual(b64u(bits),expected);
 }
 async function sessionToken(env){
  const payload=b64u(encoder.encode(JSON.stringify({sub:'founder',exp:Date.now()+8*60*60*1000})));
@@ -17,16 +19,16 @@ async function validSession(request,env){
  if(!env.SESSION_SIGNING_SECRET)return false;
  const raw=(request.headers.get('Cookie')||'').split(';').map(x=>x.trim()).find(x=>x.startsWith(COOKIE+'='))?.slice(COOKIE.length+1);
  if(!raw)return false;const [payload,sig]=raw.split('.');if(!payload||!sig)return false;
- const expected=b64u(await hmac(env.SESSION_SIGNING_SECRET,payload));if(sig!==expected)return false;
+ if(!await validHmac(env.SESSION_SIGNING_SECRET,payload,sig))return false;
  try{const data=JSON.parse(new TextDecoder().decode(unb64u(payload)));return data.sub==='founder'&&data.exp>Date.now();}catch{return false;}
 }
 function response(data,status=200,headers={}){return new Response(JSON.stringify(data),{status,headers:{'content-type':'application/json; charset=utf-8','cache-control':'no-store','x-content-type-options':'nosniff',...headers}});}
 async function handle(request,env){
  const url=new URL(request.url);
  const origin=request.headers.get('Origin');
- if(request.method==='POST'&&origin&&origin!==url.origin)return response({error:'Cross-origin request rejected'},403);
+ if(request.method==='POST'&&origin!==url.origin)return response({error:'Same-origin request required'},403);
  if(url.pathname==='/api/founder/login'&&request.method==='POST'){
-  if(!env.FOUNDER_PASSWORD_HASH||!env.SESSION_SIGNING_SECRET||!env.AUTH_LIMITS)return response({error:'Authentication or rate limiting is not configured'},503);
+  if(!env.FOUNDER_PASSWORD_HASH||!env.SESSION_SIGNING_SECRET||env.SESSION_SIGNING_SECRET.length<32||!env.AUTH_LIMITS)return response({error:'Authentication or rate limiting is not configured'},503);
   const ip=request.headers.get('CF-Connecting-IP')||'unknown';
   const key='login:'+ip;const count=Number(await env.AUTH_LIMITS?.get(key)||0);
   if(count>=10)return response({error:'Too many attempts'},429);
