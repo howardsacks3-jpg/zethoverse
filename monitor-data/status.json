@@ -1,18 +1,19 @@
 {
-  "generatedAt": "2026-11-17T11:10:26.032Z",
+  "generatedAt": "2026-11-17T11:12:44.461Z",
   "lastSuccessfulScan": null,
   "mode": "READ_ONLY",
   "health": "WAITING_FOR_CONFIGURATION",
   "rpcEndpoint": "public Solana RPC endpoint",
   "mintConfigured": false,
   "addressesConfigured": false,
+  "programsConfigured": false,
   "emailConfigured": false,
   "checks": [
     {
       "name": "Solana mainnet RPC",
       "status": "PASS",
       "genesisHash": "5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d",
-      "checkedAt": "2026-11-17T11:10:26.031Z"
+      "checkedAt": "2026-11-17T11:12:44.460Z"
     },
     {
       "name": "Official ZETHO mint",
@@ -25,10 +26,15 @@
       "detail": "No independently verified project addresses configured"
     },
     {
+      "name": "Program address register",
+      "status": "WAITING",
+      "detail": "No verified mainnet program IDs configured"
+    },
+    {
       "name": "Email alert delivery",
       "status": "WAITING",
       "detail": "Configure RESEND_API_KEY, ALERT_EMAIL_TO and ALERT_EMAIL_FROM",
-      "checkedAt": "2026-11-17T11:10:26.032Z"
+      "checkedAt": "2026-11-17T11:12:44.461Z"
     },
     {
       "name": "Dedicated RPC provider",
