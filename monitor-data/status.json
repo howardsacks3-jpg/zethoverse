@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-17T11:14:06.360Z",
+  "generatedAt": "2026-11-17T11:15:09.232Z",
   "lastSuccessfulScan": null,
   "mode": "READ_ONLY",
   "health": "WAITING_FOR_CONFIGURATION",
@@ -13,7 +13,7 @@
       "name": "Solana mainnet RPC",
       "status": "PASS",
       "genesisHash": "5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d",
-      "checkedAt": "2026-11-17T11:14:06.359Z"
+      "checkedAt": "2026-11-17T11:15:09.232Z"
     },
     {
       "name": "Official ZETHO mint",
@@ -34,7 +34,7 @@
       "name": "Email alert delivery",
       "status": "WAITING",
       "detail": "Configure RESEND_API_KEY, ALERT_EMAIL_TO and ALERT_EMAIL_FROM",
-      "checkedAt": "2026-11-17T11:14:06.360Z"
+      "checkedAt": "2026-11-17T11:15:09.232Z"
     },
     {
       "name": "Dedicated RPC provider",
