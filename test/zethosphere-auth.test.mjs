@@ -21,7 +21,7 @@ test('successful login issues a secure session cookie accepted by the session en
  assert.deepEqual(await session.json(),{authenticated:true});
 });
 test('login rate limit blocks repeated attempts',async()=>{
- const env={FOUNDER_PASSWORD_HASH:'bad',SESSION_SIGNING_SECRET:'secret',AUTH_LIMITS:{get:async()=> '10'}};
+ const env={FOUNDER_PASSWORD_HASH:'bad',SESSION_SIGNING_SECRET:'a-long-independent-session-signing-secret',AUTH_LIMITS:{get:async()=> '10'}};
  const r=await handle(new Request('https://example.test/api/founder/login',{method:'POST',headers:{'content-type':'application/json',Origin:'https://example.test'},body:JSON.stringify({password:'wrong'})}),env);
  assert.equal(r.status,429);
 });
