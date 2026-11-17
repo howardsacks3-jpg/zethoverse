@@ -14,6 +14,8 @@ test('monitor establishes a baseline, detects new token activity and publishes h
   let body='';for await(const chunk of req)body+=chunk;const q=JSON.parse(body);let result=null;
   if(q.method==='getHealth')result='ok';
   else if(q.method==='getGenesisHash')result=GENESIS;
+  else if(q.method==='getAccountInfo'&&q.params[0]==='22222222222222222222222222222222')result={value:{data:{parsed:{type:'program',info:{programData:'33333333333333333333333333333333'}}}}};
+  else if(q.method==='getAccountInfo'&&q.params[0]==='33333333333333333333333333333333')result={value:{data:{parsed:{type:'programData',info:{slot:12,upgradeAuthority:null}}}}};
   else if(q.method==='getAccountInfo')result={value:{data:{parsed:{type:'mint',info:{decimals:9,supply:'5000000000',mintAuthority:null,freezeAuthority:null}}}}};
   else if(q.method==='getSignaturesForAddress'){
    scan++;
@@ -26,7 +28,7 @@ test('monitor establishes a baseline, detects new token activity and publishes h
  t.after(()=>new Promise(resolve=>server.close(resolve)));
  const dir=fs.mkdtempSync(path.join(os.tmpdir(),'zethosphere-'));t.after(()=>fs.rmSync(dir,{recursive:true,force:true}));
  const address='11111111111111111111111111111111';
- const env={...process.env,SOLANA_RPC_URL:'http://127.0.0.1:'+server.address().port,ZETHO_MINT_ADDRESS:address,ZETHO_MONITOR_ADDRESSES:address};
+ const env={...process.env,SOLANA_RPC_URL:'http://127.0.0.1:'+server.address().port,ZETHO_MINT_ADDRESS:address,ZETHO_MONITOR_ADDRESSES:address,ZETHO_PROGRAM_ADDRESSES:'22222222222222222222222222222222'};
  const run=()=>{const r=spawnSync(process.execPath,['scripts/zethosphere-monitor.cjs'],{cwd:dir,env,encoding:'utf8'});assert.equal(r.status,0,r.stderr||r.stdout);};
  run();
  let state=JSON.parse(fs.readFileSync(path.join(dir,'monitor-data/events.json'),'utf8'));
