@@ -93,5 +93,34 @@
 <div class="notice"><strong>Wallet safety:</strong> The dashboard must never ask for a seed phrase, private key or wallet signature. Monitoring will use public blockchain data and read-only access. It will not create streams, change permissions, transfer tokens or automatically move funds.</div>
 </main>
 <footer class="footer"><b style="color:var(--gold);letter-spacing:3px">ZETHOVERSE · ZETHOSPHERE</b><p>One tiny universe. Everyone connected.</p><p><a href="index.html">Home</a> · <a href="about.html">ZETHOVERSE</a> · <a href="coin.html">The Coin · ZETHO</a> · <a href="token-transparency.html">Transparency &amp; Vesting</a> · <a href="zethosphere.html">Zethosphere</a> · <a href="roadmap.html">Roadmap</a> · <a href="litepaper.html">Litepaper</a> · <a href="faq.html">FAQ</a> · <a href="disclaimer.html">Legal</a></p><p>Public dashboard preview only. Monitoring and alert delivery are not yet active.</p></footer>
+
+<script>
+(async function(){
+ const badge=document.querySelector('.toolbar .status');
+ const notice=document.querySelector('main .notice');
+ const tables=document.querySelectorAll('main table.activity tbody');
+ try{
+  const response=await fetch('monitor-data/status.json',{cache:'no-store'});
+  if(!response.ok) throw new Error('Status feed unavailable');
+  const data=await response.json();
+  const labels={OPERATIONAL:'MONITORING ACTIVE',DEGRADED:'MONITORING DEGRADED',WAITING_FOR_CONFIGURATION:'WAITING FOR VERIFIED ADDRESSES'};
+  if(badge){badge.className='status '+(data.health==='OPERATIONAL'?'':'off');badge.textContent=labels[data.health]||'MONITORING OFFLINE';}
+  const generated=data.generatedAt?new Date(data.generatedAt).toLocaleString():'Not yet run';
+  const topNotice=document.querySelector('main .notice');
+  if(topNotice) topNotice.innerHTML='<strong>LIVE MONITOR STATUS.</strong><br>'+((data.notice||'Read-only monitor status.')+' Last scan: '+generated+'. Health: '+(labels[data.health]||data.health)+'.');
+  const securityCards=[...document.querySelectorAll('main .grid .card')].filter(c=>c.querySelector('h3'));
+  const checkMap=new Map((data.checks||[]).map(c=>[c.name,c]));
+  const statusText=data.health==='OPERATIONAL'?'Scan completed':'Not yet verified';
+  securityCards.forEach(card=>{const p=card.querySelector('.muted');if(p&&/scan|feed|connected/i.test(p.textContent)){const s=document.createElement('p');s.className='muted';s.textContent='Monitor: '+statusText+' · '+generated;p.after(s);}});
+  if(tables[0]&&Array.isArray(data.events)&&data.events.length){
+   tables[0].innerHTML=data.events.slice(0,25).map(e=>'<tr><td>'+String(e.blockTime?new Date(e.blockTime*1000).toLocaleString():'New')+'</td><td>'+String(e.type)+'</td><td>—</td><td>'+String(e.address||'—')+'</td><td>'+(e.evidence&&e.evidence.startsWith('https://')?'<a rel="noopener" target="_blank" href="'+e.evidence+'">Evidence</a>':'—')+'</td></tr>').join('');
+  }
+  if(tables[1]&&Array.isArray(data.events)&&data.events.length){
+   tables[1].innerHTML=data.events.slice(0,25).map(e=>'<tr><td>'+String(e.severity)+'</td><td>'+String(e.blockTime?new Date(e.blockTime*1000).toLocaleString():'—')+'</td><td>'+String(e.message||e.type)+'</td><td>New</td><td>'+(e.evidence&&e.evidence.startsWith('https://')?'<a rel="noopener" target="_blank" href="'+e.evidence+'">Evidence</a>':'—')+'</td></tr>').join('');
+  }
+ }catch(e){if(badge){badge.className='status off';badge.textContent='MONITORING OFFLINE';}}
+})();
+</script>
+
 </body>
 </html>
