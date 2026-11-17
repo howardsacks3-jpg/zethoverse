@@ -9,7 +9,7 @@ function mergeEvents(existing,incoming,max=1000){
 function pendingAlerts(events){return (events||[]).filter(e=>['CRITICAL','WARNING'].includes(e.severity)&&!e.alertedAt&&!e.acknowledged);}
 async function sendEmail(event,env=process.env){
  if(!env.RESEND_API_KEY||!env.ALERT_EMAIL_TO||!env.ALERT_EMAIL_FROM) return {sent:false,reason:'Email not configured'};
- const response=await fetch('https://api.resend.com/emails',{method:'POST',headers:{Authorization:'Bearer '+env.RESEND_API_KEY,'Content-Type':'application/json'},body:JSON.stringify({from:env.ALERT_EMAIL_FROM,to:[env.ALERT_EMAIL_TO],subject:'[ZETHOSPHERE '+event.severity+'] '+event.type,text:[event.message,'Detected: '+(event.firstSeenAt||new Date().toISOString()),'Signature: '+(event.signature||'N/A'),'Address: '+(event.address||'N/A'),'Evidence: '+(event.evidence||'N/A'),'This is an automated read-only monitoring alert. Verify independently before acting.'].join('\\n')})});
+ const response=await fetch('https://api.resend.com/emails',{method:'POST',headers:{Authorization:'Bearer '+env.RESEND_API_KEY,'Content-Type':'application/json'},body:JSON.stringify({from:env.ALERT_EMAIL_FROM,to:[env.ALERT_EMAIL_TO],subject:'[ZETHOSPHERE '+event.severity+'] '+event.type,text:[event.message,'Detected: '+(event.firstSeenAt||new Date().toISOString()),'Signature: '+(event.signature||'N/A'),'Address: '+(event.address||'N/A'),'Evidence: '+(event.evidence||'N/A'),'This is an automated read-only monitoring alert. Verify independently before acting.'].join('\n')})});
  const body=await response.json().catch(()=>({}));
  if(!response.ok)throw new Error('Email provider HTTP '+response.status+': '+(body.message||'delivery request failed'));
  return {sent:true,id:body.id||null};
