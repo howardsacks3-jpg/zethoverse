@@ -14,7 +14,7 @@ Repository Settings → Secrets and variables → Actions:
 
 Secrets:
 - RESEND_API_KEY: Resend API key. Never put it in source code or a public variable.
-- SOLANA_RPC_URL: optional dedicated mainnet RPC URL. If omitted, the public Solana mainnet endpoint is used.
+- SOLANA_RPC_URL: dedicated mainnet RPC URL. The public Solana mainnet endpoint is a limited fallback for testing; a dedicated provider is required before OPERATIONAL status.
 
 Variables:
 - ZETHO_MINT_ADDRESS: official verified mainnet SPL mint address, once created and independently checked.
@@ -41,7 +41,7 @@ The founder authentication code is a Cloudflare Worker. It requires:
 - AUTH_LIMITS: a Cloudflare KV namespace binding used for login rate limiting.
 - MONITOR_STATUS_URL: the published status JSON URL, normally https://zethoverse.com/monitor-data/status.json.
 
-Create the KV namespace with `npx wrangler kv namespace create AUTH_LIMITS`, then add the returned namespace ID as the AUTH_LIMITS binding in wrangler.toml. Set FOUNDER_PASSWORD_HASH and SESSION_SIGNING_SECRET with `npx wrangler secret put ...`; set MONITOR_STATUS_URL in the Worker variables. Deploy the Worker with Wrangler after configuring the KV binding in wrangler.toml. Add the Worker route zethoverse.com/api/founder/* only if the domain is managed through Cloudflare DNS and the route is configured to the Worker. If the site is not routed through Cloudflare, the login page's same-origin /api/founder requests will remain unavailable until a same-origin reverse proxy is configured. The static founder page intentionally does not send credentials to a separate third-party origin. Do not expose the Worker with permissive CORS or put passwords in query strings.
+Create the KV namespace with `npx wrangler kv namespace create AUTH_LIMITS`, then add the returned namespace ID as the AUTH_LIMITS binding in wrangler.toml. Set FOUNDER_PASSWORD_HASH and SESSION_SIGNING_SECRET with `npx wrangler secret put ...`; set MONITOR_STATUS_URL in the Worker variables. Deploy the Worker with Wrangler after configuring the KV binding in wrangler.toml. Add the Worker route zethoverse.com/api/founder/* only if the domain is managed through Cloudflare DNS and the route is configured to the Worker. The current zethoverse.com DNS is on Namecheap BasicDNS, not Cloudflare. Do not add a Cloudflare Worker route or change nameservers unless separately approved. With the current DNS setup, the login page's same-origin /api/founder requests remain unavailable until an approved same-origin reverse proxy or hosting change is configured. The static founder page intentionally does not send credentials to a separate third-party origin. Do not expose the Worker with permissive CORS or put passwords in query strings.
 
 The Worker fails closed if password hashing, session signing, or KV rate limiting is not configured. Sessions are HttpOnly, Secure, SameSite=Strict, and expire after eight hours. Password-only is the requested first phase; adding MFA should be considered before production use.
 
