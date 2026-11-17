@@ -1,7 +1,7 @@
 'use strict';
 const test=require('node:test');const assert=require('node:assert/strict');
 const {classifyTransaction}=require('../scripts/zethosphere-classifier.cjs');
-const make=(type)=>({slot:10,blockTime:100,transaction:{message:{instructions:[{program:'spl-token',programId:'Token111',parsed:{type,info:{}}}]}},meta:{fee:5000,preTokenBalances:[],postTokenBalances:[],innerInstructions:[],logMessages:[]}});
+const make=(type)=>({slot:10,blockTime:100,transaction:{message:{instructions:[{program:'spl-token',programId:'Token111',parsed:{type,info:{mint:'mint',account:'mint'}}}]}},meta:{fee:5000,preTokenBalances:[],postTokenBalances:[],innerInstructions:[],logMessages:[]}});
 test('classifies mint, authority, burn and transfer instructions',()=>{
  assert.equal(classifyTransaction(make('mintTo'),'sig1','mint').severity,'CRITICAL');
  assert.equal(classifyTransaction(make('setAuthority'),'sig2','mint').type,'TOKEN_AUTHORITY_CHANGE');
