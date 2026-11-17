@@ -2,7 +2,8 @@
 const fs=require('node:fs');const path=require('node:path');
 const {classifyTransaction}=require('./zethosphere-classifier.cjs');
 const {mergeEvents,deliverPending}=require('./zethosphere-alerts.cjs');
-const DEDICATED_RPC=!!process.env.SOLANA_RPC_URL;\nconst RPC=process.env.SOLANA_RPC_URL||'https://api.mainnet-beta.solana.com';
+const DEDICATED_RPC=!!process.env.SOLANA_RPC_URL;
+const RPC=process.env.SOLANA_RPC_URL||'https://api.mainnet-beta.solana.com';
 const ADDRESSES=(process.env.ZETHO_MONITOR_ADDRESSES||'').split(',').map(x=>x.trim()).filter(Boolean);
 const MINT=(process.env.ZETHO_MINT_ADDRESS||'').trim();
 const OUT=path.join(process.cwd(),'monitor-data'),HISTORY=path.join(OUT,'events.json'),STATUS=path.join(OUT,'status.json');
@@ -65,7 +66,8 @@ async function main(){
  const failedDelivery=delivery.some(x=>!x.sent);
  const emailConfigured=!!(process.env.RESEND_API_KEY&&process.env.ALERT_EMAIL_TO&&process.env.ALERT_EMAIL_FROM);
  checks.push({name:'Email alert delivery',status:!emailConfigured?'WAITING':failedDelivery?'ERROR':'PASS',detail:!emailConfigured?'Configure RESEND_API_KEY, ALERT_EMAIL_TO and ALERT_EMAIL_FROM':failedDelivery?'One or more alerts remain queued for retry':'No pending critical/warning alerts; provider accepted configured sends',checkedAt:now()});
- checks.push({name:'Dedicated RPC provider',status:DEDICATED_RPC?'PASS':'WAITING',detail:DEDICATED_RPC?'Dedicated RPC configured':'Configure SOLANA_RPC_URL; public RPC is for limited testing, not production monitoring'});\n const requiredOk=rpcOk&&DEDICATED_RPC&&!!MINT&&ADDRESSES.length>0&&emailConfigured&&checks.filter(c=>['Solana mainnet RPC','Mint account','Project address register'].some(n=>c.name===n)||c.name.startsWith('Address ')).every(c=>c.status==='PASS')&&!scanGap;
+ checks.push({name:'Dedicated RPC provider',status:DEDICATED_RPC?'PASS':'WAITING',detail:DEDICATED_RPC?'Dedicated RPC configured':'Configure SOLANA_RPC_URL; public RPC is for limited testing, not production monitoring'});
+ const requiredOk=rpcOk&&DEDICATED_RPC&&!!MINT&&ADDRESSES.length>0&&emailConfigured&&checks.filter(c=>['Solana mainnet RPC','Mint account','Project address register'].some(n=>c.name===n)||c.name.startsWith('Address ')).every(c=>c.status==='PASS')&&!scanGap;
  const health=checks.some(c=>c.status==='ERROR')||failedDelivery?'DEGRADED':requiredOk?'OPERATIONAL':'WAITING_FOR_CONFIGURATION';
  const status={generatedAt:now(),lastSuccessfulScan:requiredOk?now():(read(STATUS,{}).lastSuccessfulScan||null),mode:'READ_ONLY',health,rpcEndpoint:RPC.includes('api-key')?'configured provider endpoint':'public Solana RPC endpoint',mintConfigured:!!MINT,addressesConfigured:ADDRESSES.length>0,emailConfigured,checks,events:state.events.slice(0,100),pendingAlerts:state.events.filter(e=>e.deliveryPending&&!e.alertedAt).length,notice:health==='OPERATIONAL'?'Configured read-only checks completed. This is not a guarantee against compromise.':'Monitoring is not fully operational. Missing configuration, failed checks or delivery problems must not be interpreted as safe.'};
  fs.writeFileSync(HISTORY,JSON.stringify(state,null,2)+'\n');fs.writeFileSync(STATUS,JSON.stringify(status,null,2)+'\n');
