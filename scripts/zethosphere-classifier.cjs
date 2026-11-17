@@ -24,7 +24,7 @@ function classifyTransaction(tx, signature, mint){
  else if(minting){type='TOKEN_MINT';severity='CRITICAL';message='Token mint instruction detected';}
  else if(burning){type='TOKEN_BURN';severity='WARNING';message='Token burn instruction detected';}
  else if(swap){type='SWAP';severity='INFO';message='Swap-like program invocation detected; amounts require balance-delta verification';}
- else if(transfers.length&&targetTokenMovement){type='TOKEN_TRANSFER';severity='WARNING';message='Token transfer involving monitored mint detected';}
+ else if(transfers.length&&targetEvent){type='TOKEN_TRANSFER';severity='WARNING';message='Token transfer involving monitored mint detected';}
  else if(tx?.meta?.err){type='FAILED_TRANSACTION';severity='WARNING';message='Transaction failed on chain';}
  const pre=tx?.meta?.preTokenBalances||[], post=tx?.meta?.postTokenBalances||[];
  const deltas=[];
