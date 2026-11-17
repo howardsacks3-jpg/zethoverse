@@ -86,39 +86,54 @@
 <article class="card"><ol class="muted"><li>Read the alert evidence and timestamp; confirm whether the monitor itself is healthy.</li><li>Open the transaction/program/account evidence using a trusted explorer or provider site entered manually.</li><li>Check the affected public address and event against the approved ZETHO address register.</li><li>Secure potentially affected email, hosting and administrator accounts from a clean device; revoke unknown sessions where supported.</li><li>Do not share credentials, connect a wallet, sign a message or run commands supplied by an unsolicited contact.</li><li>Preserve logs and transaction signatures; contact the relevant service provider or a trusted Solana security professional if compromise is credible.</li><li>Only resume normal operations after independent verification and a recorded recovery check.</li></ol></article>
 <div class="notice"><strong>Important limitations:</strong> This playbook is defensive guidance, not a guarantee that attacks can be prevented. Solana transactions that are finalized are generally irreversible. A dashboard cannot freeze a wallet or stop every exploit. Any containment action must be technically supported, independently verified and deliberately approved by the founder.</div>
 <div class="section"><div class="eyebrow">07 / Founder access</div><h2>Private monitoring controls</h2></div>
-<section class="founder"><h2>Founder control panel</h2><p class="muted">Private area for authenticated founder access to deeper scans, investigation details, monitor configuration, alert rules and incident response tools. Public visitors will not have access to these controls.</p><span class="status off"><i class="dot"></i>Secure login not configured</span><p class="muted">Password-only login is the initial requirement; two-factor authentication is deferred. The login will not be enabled until server-side authentication, secure password hashing, session protection and login rate-limiting are implemented and tested. This static page does not collect or store passwords.</p></section>
+<section class="founder"><h2>Founder control panel</h2><p><a href="founder.html">Open founder sign-in</a></p><p class="muted">Private area for authenticated founder access to deeper scans, investigation details, monitor configuration, alert rules and incident response tools. Public visitors will not have access to these controls.</p><span class="status off"><i class="dot"></i>Secure login not configured</span><p class="muted">Password-only login is the initial requirement; two-factor authentication is deferred. The login will not be enabled until server-side authentication, secure password hashing, session protection and login rate-limiting are implemented and tested. This static page does not collect or store passwords.</p></section>
 
 <div class="section"><div class="eyebrow">07 / Build status</div><h2>What remains before this becomes operational</h2></div>
 <article class="card"><ul class="muted"><li>Confirm official ZETHO Mainnet mint and all project-controlled public addresses.</li><li>Build a server-side, read-only Solana and market-data monitor.</li><li>Implement transaction classification, anomaly rules and scan timestamps.</li><li>Build and test the private password-only founder authentication service.</li><li>Connect and test red-alert email delivery with the founder's chosen recipient.</li><li>Test simulated incidents and false-positive handling before enabling live alerts.</li></ul></article>
 <div class="notice"><strong>Wallet safety:</strong> The dashboard must never ask for a seed phrase, private key or wallet signature. Monitoring will use public blockchain data and read-only access. It will not create streams, change permissions, transfer tokens or automatically move funds.</div>
 </main>
-<footer class="footer"><b style="color:var(--gold);letter-spacing:3px">ZETHOVERSE · ZETHOSPHERE</b><p>One tiny universe. Everyone connected.</p><p><a href="index.html">Home</a> · <a href="about.html">ZETHOVERSE</a> · <a href="coin.html">The Coin · ZETHO</a> · <a href="token-transparency.html">Transparency &amp; Vesting</a> · <a href="zethosphere.html">Zethosphere</a> · <a href="roadmap.html">Roadmap</a> · <a href="litepaper.html">Litepaper</a> · <a href="faq.html">FAQ</a> · <a href="disclaimer.html">Legal</a></p><p>Public dashboard preview only. Monitoring and alert delivery are not yet active.</p></footer>
+<footer class="footer"><b style="color:var(--gold);letter-spacing:3px">ZETHOVERSE · ZETHOSPHERE</b><p>One tiny universe. Everyone connected.</p><p><a href="index.html">Home</a> · <a href="about.html">ZETHOVERSE</a> · <a href="coin.html">The Coin · ZETHO</a> · <a href="token-transparency.html">Transparency &amp; Vesting</a> · <a href="zethosphere.html">Zethosphere</a> · <a href="roadmap.html">Roadmap</a> · <a href="litepaper.html">Litepaper</a> · <a href="faq.html">FAQ</a> · <a href="disclaimer.html">Legal</a></p><p>Dashboard status is sourced from the published read-only monitor. Stale or unavailable data is not a safe result.</p></footer>
 
 <script>
 (async function(){
  const badge=document.querySelector('.toolbar .status');
- const notice=document.querySelector('main .notice');
+ const notices=document.querySelectorAll('main .notice');
  const tables=document.querySelectorAll('main table.activity tbody');
+ const footer=document.querySelector('.footer p:last-child');
+ const setCell=(row,value)=>{const td=document.createElement('td');td.textContent=value??'—';row.appendChild(td);return td;};
+ const addEvidence=(cell,url)=>{if(typeof url==='string'&&/^https:\/\/explorer\.solana\.com\/(tx|address)\//.test(url)){const a=document.createElement('a');a.href=url;a.target='_blank';a.rel='noopener noreferrer';a.textContent='Evidence';cell.appendChild(a);}else cell.textContent='—';};
  try{
   const response=await fetch('monitor-data/status.json',{cache:'no-store'});
-  if(!response.ok) throw new Error('Status feed unavailable');
+  if(!response.ok)throw new Error('Status feed HTTP '+response.status);
   const data=await response.json();
-  const labels={OPERATIONAL:'MONITORING ACTIVE',DEGRADED:'MONITORING DEGRADED',WAITING_FOR_CONFIGURATION:'WAITING FOR VERIFIED ADDRESSES'};
-  if(badge){badge.className='status '+(data.health==='OPERATIONAL'?'':'off');badge.textContent=labels[data.health]||'MONITORING OFFLINE';}
-  const generated=data.generatedAt?new Date(data.generatedAt).toLocaleString():'Not yet run';
-  const topNotice=document.querySelector('main .notice');
-  if(topNotice) topNotice.innerHTML='<strong>LIVE MONITOR STATUS.</strong><br>'+((data.notice||'Read-only monitor status.')+' Last scan: '+generated+'. Health: '+(labels[data.health]||data.health)+'.');
-  const securityCards=[...document.querySelectorAll('main .grid .card')].filter(c=>c.querySelector('h3'));
-  const checkMap=new Map((data.checks||[]).map(c=>[c.name,c]));
-  const statusText=data.health==='OPERATIONAL'?'Scan completed':'Not yet verified';
-  securityCards.forEach(card=>{const p=card.querySelector('.muted');if(p&&/scan|feed|connected/i.test(p.textContent)){const s=document.createElement('p');s.className='muted';s.textContent='Monitor: '+statusText+' · '+generated;p.after(s);}});
-  if(tables[0]&&Array.isArray(data.events)&&data.events.length){
-   tables[0].innerHTML=data.events.slice(0,25).map(e=>'<tr><td>'+String(e.blockTime?new Date(e.blockTime*1000).toLocaleString():'New')+'</td><td>'+String(e.type)+'</td><td>—</td><td>'+String(e.address||'—')+'</td><td>'+(e.evidence&&e.evidence.startsWith('https://')?'<a rel="noopener" target="_blank" href="'+e.evidence+'">Evidence</a>':'—')+'</td></tr>').join('');
+  const scanned=data.generatedAt?Date.parse(data.generatedAt):0;
+  const age=scanned?Date.now()-scanned:Infinity;
+  const stale=age>15*60*1000;
+  let health=data.health||'UNKNOWN';
+  if(stale&&health==='OPERATIONAL')health='STALE';
+  const labels={OPERATIONAL:'MONITORING ACTIVE',DEGRADED:'MONITORING DEGRADED',WAITING_FOR_CONFIGURATION:'WAITING FOR VERIFIED ADDRESSES',STALE:'MONITORING STALE'};
+  const label=labels[health]||'MONITORING OFFLINE';
+  if(badge){badge.className='status '+(health==='OPERATIONAL'?'':'off');badge.textContent=label;}
+  const generated=data.generatedAt?new Date(data.generatedAt).toLocaleString():'Never';
+  const top=notices[0];
+  if(top){const strong=document.createElement('strong');strong.textContent='MONITOR STATUS: '+label+'. ';top.replaceChildren(strong,document.createTextNode((data.notice||'Read-only monitor status.')+' Last scan: '+generated+'.'+(stale?' The published status is older than 15 minutes.':'') ));}
+  if(footer)footer.textContent='Monitoring status: '+label+' · Last published scan: '+generated;
+  const events=Array.isArray(data.events)?data.events:[];
+  if(tables[0]){
+   tables[0].replaceChildren();
+   if(!events.length){const tr=document.createElement('tr'),td=document.createElement('td');td.colSpan=5;td.className='empty';td.textContent='No events recorded in the published history.';tr.appendChild(td);tables[0].appendChild(tr);}
+   events.slice(0,25).forEach(e=>{const tr=document.createElement('tr');setCell(tr,e.blockTime?new Date(e.blockTime*1000).toLocaleString():e.firstSeenAt||'—');setCell(tr,e.type);setCell(tr,(e.tokenDeltas||[]).map(d=>d.delta+' base units').join(', ')||'—');setCell(tr,e.address||'—');addEvidence(setCell(tr,''),e.evidence);tables[0].appendChild(tr);});
   }
-  if(tables[1]&&Array.isArray(data.events)&&data.events.length){
-   tables[1].innerHTML=data.events.slice(0,25).map(e=>'<tr><td>'+String(e.severity)+'</td><td>'+String(e.blockTime?new Date(e.blockTime*1000).toLocaleString():'—')+'</td><td>'+String(e.message||e.type)+'</td><td>New</td><td>'+(e.evidence&&e.evidence.startsWith('https://')?'<a rel="noopener" target="_blank" href="'+e.evidence+'">Evidence</a>':'—')+'</td></tr>').join('');
+  if(tables[1]){
+   tables[1].replaceChildren();
+   if(!events.length){const tr=document.createElement('tr'),td=document.createElement('td');td.colSpan=5;td.className='empty';td.textContent='No alert events recorded. This is not proof that no suspicious activity exists.';tr.appendChild(td);tables[1].appendChild(tr);}
+   events.slice(0,25).forEach(e=>{const tr=document.createElement('tr');setCell(tr,e.severity);setCell(tr,e.firstSeenAt||'—');setCell(tr,e.message||e.type);setCell(tr,e.alertedAt?'Email accepted':e.deliveryPending?'Email pending':'Recorded');addEvidence(setCell(tr,''),e.evidence);tables[1].appendChild(tr);});
   }
- }catch(e){if(badge){badge.className='status off';badge.textContent='MONITORING OFFLINE';}}
+ }catch(error){
+  if(badge){badge.className='status off';badge.textContent='MONITORING OFFLINE';}
+  if(notices[0])notices[0].textContent='Monitoring status could not be loaded. Treat the dashboard as unavailable, not as a clean security result.';
+  if(footer)footer.textContent='Monitoring status unavailable.';
+ }
 })();
 </script>
 
