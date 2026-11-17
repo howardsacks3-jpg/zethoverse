@@ -33,7 +33,7 @@ test('founder monitor status endpoint denies unauthenticated requests',async()=>
 test('founder monitor status endpoint requires configured source after authentication',async()=>{
  const password='correct horse battery staple with extras';
  const env={FOUNDER_PASSWORD_HASH:await hash(password),SESSION_SIGNING_SECRET:'a-long-independent-session-signing-secret',AUTH_LIMITS:{get:async()=>null,put:async()=>{},delete:async()=>{}}};
- const login=await handle(new Request('https://example.test/api/founder/login',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({password})}),env);
+ const login=await handle(new Request('https://example.test/api/founder/login',{method:'POST',headers:{'content-type':'application/json',Origin:'https://example.test'},body:JSON.stringify({password})}),env);
  const cookie=login.headers.get('set-cookie').split(';')[0];
  const r=await handle(new Request('https://example.test/api/founder/monitor-status',{headers:{Cookie:cookie}}),env);
  assert.equal(r.status,503);
@@ -51,7 +51,7 @@ test('session signatures are rejected after tampering',async()=>{
  const login=await handle(new Request('https://example.test/api/founder/login',{method:'POST',headers:{'content-type':'application/json',Origin:'https://example.test'},body:JSON.stringify({password})}),env);
  const cookie=login.headers.get('set-cookie').split(';')[0];
  const token=cookie.slice(cookie.indexOf('=')+1);
- const tampered=token.slice(0,-1)+(token.endsWith('A')?'B':'A');
+ const dot=token.indexOf('.');const signature=token.slice(dot+1);const tampered=token.slice(0,dot+1)+(signature[0]==='A'?'B':'A')+signature.slice(1);
  const response=await handle(new Request('https://example.test/api/founder/session',{headers:{Cookie:'zetho_founder_session='+tampered}}),env);
  assert.deepEqual(await response.json(),{authenticated:false});
 });
