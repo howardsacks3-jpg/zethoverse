@@ -19,6 +19,7 @@ Secrets:
 Variables:
 - ZETHO_MINT_ADDRESS: official verified mainnet SPL mint address, once created and independently checked.
 - ZETHO_MONITOR_ADDRESSES: comma-separated verified project public addresses.
+- ZETHO_PROGRAM_ADDRESSES: comma-separated verified upgradeable Solana program IDs; the monitor checks each program account, ProgramData address, deployment slot and upgrade authority.
 - ALERT_EMAIL_TO: founder alert destination.
 - ALERT_EMAIL_FROM: sender address verified by Resend.
 
@@ -43,7 +44,7 @@ The Worker fails closed if password hashing, session signing, or KV rate limitin
 
 ## Known limits requiring a later verified-address phase
 
-- Program upgrade / ProgramData monitoring needs the verified program IDs and ProgramData addresses registered explicitly.
+- Program upgrade / ProgramData monitoring is implemented for upgradeable-loader programs and requires verified program IDs in ZETHO_PROGRAM_ADDRESSES.
 - Vesting protocol event decoding needs the final deployed program and the exact program version/IDL.
 - Liquidity pool and swap classification needs the verified pool address and supported venue program IDs.
 - A signature scanner is not a substitute for an archival/indexing RPC provider. The bounded scan detects a cursor gap and degrades rather than claiming complete history.
