@@ -11,9 +11,18 @@ const OUT=path.join(process.cwd(),'monitor-data'),HISTORY=path.join(OUT,'events.
 const now=()=>new Date().toISOString();
 const read=(p,d)=>{try{return JSON.parse(fs.readFileSync(p,'utf8'));}catch{return d;}};
 async function rpc(method,params){
- const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),15000);
- try{const res=await fetch(RPC,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({jsonrpc:'2.0',id:1,method,params}),signal:controller.signal});if(!res.ok)throw Error('RPC HTTP '+res.status);const body=await res.json();if(body.error)throw Error(body.error.message||'RPC error');return body.result;}
- finally{clearTimeout(timer);}
+ let lastError;
+ for(let attempt=0;attempt<3;attempt++){
+  const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),15000);
+  try{
+   const res=await fetch(RPC,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({jsonrpc:'2.0',id:1,method,params}),signal:controller.signal});
+   if(!res.ok){const e=Error('RPC HTTP '+res.status);e.retryable=res.status===429||res.status>=500;if(!e.retryable)throw e;lastError=e;}
+   else{const body=await res.json();if(body.error){const e=Error(body.error.message||'RPC error');e.retryable=/rate|temporar|unavailable|timeout/i.test(e.message);if(!e.retryable)throw e;lastError=e;}else return body.result;}
+  }catch(e){if(!e.retryable&&e.name!=='AbortError')throw e;lastError=e;}
+  finally{clearTimeout(timer);}
+  if(attempt<2)await new Promise(resolve=>setTimeout(resolve,500*(attempt+1)));
+ }
+ throw lastError||Error('RPC request failed after retries');
 }
 async function scanAddress(address,cursor,mint){
  const found=[];let before;let cursorFound=!cursor;let pages=0;
@@ -27,12 +36,14 @@ async function scanAddress(address,cursor,mint){
  }
  if(!cursor){const first=await rpc('getSignaturesForAddress',[address,{limit:1,commitment:'confirmed'}]);return {events:[],cursor:first[0]?.signature||null,baseline:true,gap:false};}
  if(!cursorFound&&found.length>=500) return {events:[],cursor:before,baseline:false,gap:true};
- const events=[];
- for(const s of found.reverse()){
-  if(s.err){events.push({id:s.signature,signature:s.signature,address,severity:'WARNING',type:'FAILED_TRANSACTION',message:'Transaction failed on chain',slot:s.slot,blockTime:s.blockTime||null,evidence:'https://explorer.solana.com/tx/'+s.signature});continue;}
-  const tx=await rpc('getTransaction',[s.signature,{encoding:'jsonParsed',commitment:'confirmed',maxSupportedTransactionVersion:0}]);
-  if(tx)events.push({...classifyTransaction(tx,s.signature,mint),address});
-  else events.push({id:s.signature,signature:s.signature,address,severity:'WARNING',type:'TRANSACTION_UNAVAILABLE',message:'Signature found but transaction details were unavailable',slot:s.slot,blockTime:s.blockTime||null,evidence:'https://explorer.solana.com/tx/'+s.signature});
+ const events=[];const ordered=found.reverse();
+ for(let i=0;i<ordered.length;i+=10){
+  const batch=await Promise.all(ordered.slice(i,i+10).map(async s=>{
+   if(s.err)return {id:s.signature,signature:s.signature,address,severity:'INFO',type:'FAILED_TRANSACTION',message:'Transaction failed on chain',slot:s.slot,blockTime:s.blockTime||null,evidence:'https://explorer.solana.com/tx/'+s.signature};
+   const tx=await rpc('getTransaction',[s.signature,{encoding:'jsonParsed',commitment:'confirmed',maxSupportedTransactionVersion:0}]);
+   return tx?{...classifyTransaction(tx,s.signature,mint),address}:{id:s.signature,signature:s.signature,address,severity:'WARNING',type:'TRANSACTION_UNAVAILABLE',message:'Signature found but transaction details were unavailable',slot:s.slot,blockTime:s.blockTime||null,evidence:'https://explorer.solana.com/tx/'+s.signature};
+  }));
+  events.push(...batch);
  }
  const newest=found[0]?.signature||cursor;
  return {events,cursor:newest,baseline:false,gap:!cursorFound};
@@ -82,6 +93,8 @@ async function main(){
    }catch(e){checks.push({name:'Program '+program,status:'ERROR',detail:e.message,checkedAt:now()});}
   }
  }
+ const failedChecks=checks.filter(x=>x.status==='ERROR');
+ for(const check of failedChecks)incoming.push({severity:'WARNING',type:'MONITOR_CHECK_FAILED',message:check.name+' failed: '+(check.detail||'unknown error'),address:check.name.startsWith('Address ')?check.name.slice(8):undefined,evidence:'https://github.com/howardsacks3-jpg/zethoverse/actions'});
  state.events=mergeEvents(state.events,incoming,1000);
  const delivery=await deliverPending(state.events);
  const failedDelivery=delivery.some(x=>!x.sent);
