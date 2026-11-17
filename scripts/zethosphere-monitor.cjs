@@ -43,8 +43,11 @@ async function main(){
  catch(e){checks.push({name:'Solana mainnet RPC',status:'ERROR',detail:e.message,checkedAt:now()});}
  if(MINT&&!/^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(MINT))checks.push({name:'Official ZETHO mint',status:'ERROR',detail:'Mint address format is invalid'});
  if(!MINT)checks.push({name:'Official ZETHO mint',status:'WAITING',detail:'Verified mainnet mint address is not configured'});
- else if(rpcOk){
+ else if(rpcOk&&/^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(MINT)){
   try{const info=await rpc('getAccountInfo',[MINT,{encoding:'jsonParsed',commitment:'confirmed'}]);const parsed=info?.value?.data?.parsed;if(!parsed||parsed.type!=='mint')throw Error('Address is not a parsed SPL mint account');const d=parsed.info;
+   const prior=read(STATUS,{}).checks?.find(x=>x.name==='Mint account');
+   if(prior?.supply&&String(prior.supply)!==String(d.supply)){const increase=BigInt(d.supply)>BigInt(prior.supply);incoming.push({severity:increase?'CRITICAL':'WARNING',type:increase?'MINT_SUPPLY_INCREASED':'MINT_SUPPLY_DECREASED',message:'Mint supply changed from '+prior.supply+' to '+d.supply,address:MINT,evidence:'https://explorer.solana.com/address/'+MINT});}
+   if(prior&&prior.mintAuthority!==d.mintAuthority)incoming.push({severity:'CRITICAL',type:'MINT_AUTHORITY_CHANGED',message:'Mint authority changed from '+prior.mintAuthority+' to '+d.mintAuthority,address:MINT,evidence:'https://explorer.solana.com/address/'+MINT});
    checks.push({name:'Mint account',status:'PASS',checkedAt:now(),decimals:d.decimals,supply:d.supply,mintAuthority:d.mintAuthority,freezeAuthority:d.freezeAuthority});
    if(d.freezeAuthority)incoming.push({severity:'CRITICAL',type:'FREEZE_AUTHORITY_PRESENT',message:'Freeze authority is present on monitored mint',address:MINT,evidence:'https://explorer.solana.com/address/'+MINT});
    if(d.mintAuthority)incoming.push({severity:'WARNING',type:'MINT_AUTHORITY_PRESENT',message:'Mint authority remains active on monitored mint',address:MINT,evidence:'https://explorer.solana.com/address/'+MINT});
