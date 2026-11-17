@@ -32,7 +32,7 @@ async function scanAddress(address,cursor,mint){
   if(tx)events.push({...classifyTransaction(tx,s.signature,mint),address});
   else events.push({id:s.signature,signature:s.signature,address,severity:'WARNING',type:'TRANSACTION_UNAVAILABLE',message:'Signature found but transaction details were unavailable',slot:s.slot,blockTime:s.blockTime||null,evidence:'https://explorer.solana.com/tx/'+s.signature});
  }
- const newest=found[found.length-1]?.signature||cursor;
+ const newest=found[0]?.signature||cursor;
  return {events,cursor:newest,baseline:false,gap:!cursorFound};
 }
 async function main(){
@@ -61,7 +61,7 @@ async function main(){
  const failedDelivery=delivery.some(x=>!x.sent);
  const emailConfigured=!!(process.env.RESEND_API_KEY&&process.env.ALERT_EMAIL_TO&&process.env.ALERT_EMAIL_FROM);
  checks.push({name:'Email alert delivery',status:!emailConfigured?'WAITING':failedDelivery?'ERROR':'PASS',detail:!emailConfigured?'Configure RESEND_API_KEY, ALERT_EMAIL_TO and ALERT_EMAIL_FROM':failedDelivery?'One or more alerts remain queued for retry':'No pending critical/warning alerts; provider accepted configured sends',checkedAt:now()});
- const requiredOk=rpcOk&&!!MINT&&ADDRESSES.length>0&&checks.filter(c=>['Solana RPC health','Mint account','Project address register'].some(n=>c.name===n)||c.name.startsWith('Address ')).every(c=>c.status==='PASS')&&!scanGap;
+ const requiredOk=rpcOk&&!!MINT&&ADDRESSES.length>0&&emailConfigured&&checks.filter(c=>['Solana RPC health','Mint account','Project address register'].some(n=>c.name===n)||c.name.startsWith('Address ')).every(c=>c.status==='PASS')&&!scanGap;
  const health=checks.some(c=>c.status==='ERROR')||failedDelivery?'DEGRADED':requiredOk?'OPERATIONAL':'WAITING_FOR_CONFIGURATION';
  const status={generatedAt:now(),lastSuccessfulScan:requiredOk?now():(read(STATUS,{}).lastSuccessfulScan||null),mode:'READ_ONLY',health,rpcEndpoint:RPC.includes('api-key')?'configured provider endpoint':'public Solana RPC endpoint',mintConfigured:!!MINT,addressesConfigured:ADDRESSES.length>0,emailConfigured,checks,events:state.events.slice(0,100),pendingAlerts:state.events.filter(e=>e.deliveryPending&&!e.alertedAt).length,notice:health==='OPERATIONAL'?'Configured read-only checks completed. This is not a guarantee against compromise.':'Monitoring is not fully operational. Missing configuration, failed checks or delivery problems must not be interpreted as safe.'};
  fs.writeFileSync(HISTORY,JSON.stringify(state,null,2)+'\n');fs.writeFileSync(STATUS,JSON.stringify(status,null,2)+'\n');
