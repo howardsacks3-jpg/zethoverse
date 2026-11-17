@@ -1,0 +1,8 @@
+{
+  "health": "WAITING_FOR_CONFIGURATION",
+  "mode": "READ_ONLY",
+  "generatedAt": null,
+  "checks": [],
+  "events": [],
+  "notice": "Live monitoring has not started. Verified mainnet mint and public addresses are required."
+}
