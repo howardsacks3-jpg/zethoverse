@@ -22,6 +22,7 @@ Variables:
 - ZETHO_PROGRAM_ADDRESSES: comma-separated verified upgradeable Solana program IDs; the monitor checks each program account, ProgramData address, deployment slot and upgrade authority.
 - ALERT_EMAIL_TO: founder alert destination.
 - ALERT_EMAIL_FROM: sender address verified by Resend.
+- ZETHO_EMAIL_DELIVERY_VERIFIED: set to `true` only after the manual test message is visible in the founder's inbox and the Resend delivery record has been checked. Credentials alone do not make email delivery pass or allow the monitor to report OPERATIONAL.
 - ZETHO_LARGE_TRANSFER_THRESHOLD: optional alert threshold in token base units; default is 100,000 ZETHO at 9 decimals.
 
 Do not add devnet addresses or unverified wallets. Keep the mint and address variables blank until verified.
@@ -30,7 +31,7 @@ The workflow runs unit tests on pushes to this branch. The scheduled five-minute
 
 ## Email verification
 
-The monitor records a message as provider-accepted only after Resend's API accepts it. API acceptance is not proof that a message reached the inbox. Configure a verified sender domain and run the workflow manually with test_email=true; inspect the recipient inbox and Resend delivery logs. A failed send remains queued for retry.
+The monitor records a message as provider-accepted only after Resend's API accepts it. API acceptance is not proof that a message reached the inbox. Configure a verified sender domain and run the workflow manually with test_email=true; inspect the recipient inbox and Resend delivery logs. Only after actual inbox receipt is confirmed should ZETHO_EMAIL_DELIVERY_VERIFIED be set to true. A failed send remains queued for retry; provider API acceptance alone is not proof of inbox receipt.
 
 ## Founder authentication deployment
 
