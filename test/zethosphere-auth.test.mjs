@@ -25,3 +25,16 @@ test('login rate limit blocks repeated attempts',async()=>{
  const r=await handle(new Request('https://example.test/api/founder/login',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({password:'wrong'})}),env);
  assert.equal(r.status,429);
 });
+
+test('founder monitor status endpoint denies unauthenticated requests',async()=>{
+ const r=await handle(new Request('https://example.test/api/founder/monitor-status'),{});
+ assert.equal(r.status,401);
+});
+test('founder monitor status endpoint requires configured source after authentication',async()=>{
+ const password='correct horse battery staple with extras';
+ const env={FOUNDER_PASSWORD_HASH:await hash(password),SESSION_SIGNING_SECRET:'a-long-independent-session-signing-secret',AUTH_LIMITS:{get:async()=>null,put:async()=>{},delete:async()=>{}}};
+ const login=await handle(new Request('https://example.test/api/founder/login',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({password})}),env);
+ const cookie=login.headers.get('set-cookie').split(';')[0];
+ const r=await handle(new Request('https://example.test/api/founder/monitor-status',{headers:{Cookie:cookie}}),env);
+ assert.equal(r.status,503);
+});
