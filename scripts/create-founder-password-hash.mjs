@@ -1,0 +1,14 @@
+import {createInterface} from 'node:readline/promises';
+import {stdin,stdout} from 'node:process';
+import {webcrypto} from 'node:crypto';
+const rl=createInterface({input:stdin,output:stdout});
+const password=await rl.question('Founder password (input is visible in this terminal): ');
+rl.close();
+if(password.length<16)throw new Error('Use at least 16 characters');
+const salt=webcrypto.getRandomValues(new Uint8Array(16));
+const key=await webcrypto.subtle.importKey('raw',new TextEncoder().encode(password),'PBKDF2',false,['deriveBits']);
+const bits=await webcrypto.subtle.deriveBits({name:'PBKDF2',salt,iterations:310000,hash:'SHA-256'},key,256);
+const b64u=b=>Buffer.from(b).toString('base64url');
+console.log('Set Cloudflare Worker secret FOUNDER_PASSWORD_HASH to:');
+console.log(b64u(salt)+':'+b64u(bits));
+console.log('Set SESSION_SIGNING_SECRET to a separate random 32+ character secret.');
