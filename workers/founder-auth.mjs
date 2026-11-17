@@ -23,7 +23,7 @@ function response(data,status=200,headers={}){return new Response(JSON.stringify
 async function handle(request,env){
  const url=new URL(request.url);
  if(url.pathname==='/api/founder/login'&&request.method==='POST'){
-  if(!env.FOUNDER_PASSWORD_HASH||!env.SESSION_SIGNING_SECRET)return response({error:'Authentication is not configured'},503);
+  if(!env.FOUNDER_PASSWORD_HASH||!env.SESSION_SIGNING_SECRET||!env.AUTH_LIMITS)return response({error:'Authentication or rate limiting is not configured'},503);
   const ip=request.headers.get('CF-Connecting-IP')||'unknown';
   const key='login:'+ip;const count=Number(await env.AUTH_LIMITS?.get(key)||0);
   if(count>=10)return response({error:'Too many attempts'},429);
@@ -35,9 +35,9 @@ async function handle(request,env){
   }
   if(env.AUTH_LIMITS)await env.AUTH_LIMITS.delete(key);
   const token=await sessionToken(env);
-  return response({authenticated:true},{headers:{'set-cookie':COOKIE+'='+token+'; HttpOnly; Secure; SameSite=Strict; Path=/api/founder; Max-Age=28800'}});
+  return response({authenticated:true},200,{'set-cookie':COOKIE+'='+token+'; HttpOnly; Secure; SameSite=Strict; Path=/api/founder; Max-Age=28800'});
  }
- if(url.pathname==='/api/founder/logout'&&request.method==='POST')return response({authenticated:false},{headers:{'set-cookie':COOKIE+'=; HttpOnly; Secure; SameSite=Strict; Path=/api/founder; Max-Age=0'}});
+ if(url.pathname==='/api/founder/logout'&&request.method==='POST')return response({authenticated:false},200,{'set-cookie':COOKIE+'=; HttpOnly; Secure; SameSite=Strict; Path=/api/founder; Max-Age=0'});
  if(url.pathname==='/api/founder/session'&&request.method==='GET')return response({authenticated:await validSession(request,env)});
  return response({error:'Not found'},404);
 }
