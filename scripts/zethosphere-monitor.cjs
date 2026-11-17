@@ -5,6 +5,7 @@ const {mergeEvents,deliverPending}=require('./zethosphere-alerts.cjs');
 const DEDICATED_RPC=!!process.env.SOLANA_RPC_URL;
 const RPC=process.env.SOLANA_RPC_URL||'https://api.mainnet-beta.solana.com';
 const ADDRESSES=(process.env.ZETHO_MONITOR_ADDRESSES||'').split(',').map(x=>x.trim()).filter(Boolean);
+const PROGRAMS=(process.env.ZETHO_PROGRAM_ADDRESSES||'').split(',').map(x=>x.trim()).filter(Boolean);
 const MINT=(process.env.ZETHO_MINT_ADDRESS||'').trim();
 const OUT=path.join(process.cwd(),'monitor-data'),HISTORY=path.join(OUT,'events.json'),STATUS=path.join(OUT,'status.json');
 const now=()=>new Date().toISOString();
@@ -61,13 +62,33 @@ async function main(){
    catch(e){checks.push({name:'Address '+address,status:'ERROR',detail:e.message,checkedAt:now()});}
   }
  }
+
+ if(!PROGRAMS.length)checks.push({name:'Program address register',status:'WAITING',detail:'No verified mainnet program IDs configured'});
+ else if(rpcOk){
+  for(const program of PROGRAMS){
+   try{
+    const account=await rpc('getAccountInfo',[program,{encoding:'jsonParsed',commitment:'confirmed'}]);
+    const parsed=account?.value?.data?.parsed;
+    if(!parsed||parsed.type!=='program'||!parsed.info?.programData)throw Error('Program is not a parsed upgradeable-loader program account');
+    const programData=parsed.info.programData;
+    const dataAccount=await rpc('getAccountInfo',[programData,{encoding:'jsonParsed',commitment:'confirmed'}]);
+    const dataParsed=dataAccount?.value?.data?.parsed;
+    if(!dataParsed||dataParsed.type!=='programData')throw Error('ProgramData account is not parseable');
+    const info=dataParsed.info, prior=read(STATUS,{}).checks?.find(x=>x.name==='Program '+program);
+    if(prior&&prior.programData!==programData)incoming.push({severity:'CRITICAL',type:'PROGRAM_DATA_ADDRESS_CHANGED',message:'ProgramData address changed for monitored program',address:program,evidence:'https://explorer.solana.com/address/'+program});
+    if(prior&&prior.upgradeAuthority!==info.upgradeAuthority)incoming.push({severity:'CRITICAL',type:'PROGRAM_UPGRADE_AUTHORITY_CHANGED',message:'Program upgrade authority changed',address:program,evidence:'https://explorer.solana.com/address/'+program});
+    if(prior&&prior.deploymentSlot!==info.slot)incoming.push({severity:'CRITICAL',type:'PROGRAM_UPGRADE_DETECTED',message:'Program deployment slot changed from '+prior.deploymentSlot+' to '+info.slot,address:program,evidence:'https://explorer.solana.com/address/'+program});
+    checks.push({name:'Program '+program,status:'PASS',programData,upgradeAuthority:info.upgradeAuthority??null,deploymentSlot:info.slot??null,checkedAt:now()});
+   }catch(e){checks.push({name:'Program '+program,status:'ERROR',detail:e.message,checkedAt:now()});}
+  }
+ }
  state.events=mergeEvents(state.events,incoming,1000);
  const delivery=await deliverPending(state.events);
  const failedDelivery=delivery.some(x=>!x.sent);
  const emailConfigured=!!(process.env.RESEND_API_KEY&&process.env.ALERT_EMAIL_TO&&process.env.ALERT_EMAIL_FROM);
  checks.push({name:'Email alert delivery',status:!emailConfigured?'WAITING':failedDelivery?'ERROR':'PASS',detail:!emailConfigured?'Configure RESEND_API_KEY, ALERT_EMAIL_TO and ALERT_EMAIL_FROM':failedDelivery?'One or more alerts remain queued for retry':'No pending critical/warning alerts; provider accepted configured sends',checkedAt:now()});
  checks.push({name:'Dedicated RPC provider',status:DEDICATED_RPC?'PASS':'WAITING',detail:DEDICATED_RPC?'Dedicated RPC configured':'Configure SOLANA_RPC_URL; public RPC is for limited testing, not production monitoring'});
- const requiredOk=rpcOk&&DEDICATED_RPC&&!!MINT&&ADDRESSES.length>0&&emailConfigured&&checks.filter(c=>['Solana mainnet RPC','Mint account','Project address register'].some(n=>c.name===n)||c.name.startsWith('Address ')).every(c=>c.status==='PASS')&&!scanGap;
+ const requiredOk=rpcOk&&DEDICATED_RPC&&!!MINT&&ADDRESSES.length>0&&PROGRAMS.length>0&&emailConfigured&&checks.filter(c=>['Solana mainnet RPC','Mint account','Project address register','Program address register'].some(n=>c.name===n)||c.name.startsWith('Address ')).every(c=>c.status==='PASS')&&!scanGap;
  const health=checks.some(c=>c.status==='ERROR')||failedDelivery?'DEGRADED':requiredOk?'OPERATIONAL':'WAITING_FOR_CONFIGURATION';
  const status={generatedAt:now(),lastSuccessfulScan:requiredOk?now():(read(STATUS,{}).lastSuccessfulScan||null),mode:'READ_ONLY',health,rpcEndpoint:RPC.includes('api-key')?'configured provider endpoint':'public Solana RPC endpoint',mintConfigured:!!MINT,addressesConfigured:ADDRESSES.length>0,emailConfigured,checks,events:state.events.slice(0,100),pendingAlerts:state.events.filter(e=>e.deliveryPending&&!e.alertedAt).length,notice:health==='OPERATIONAL'?'Configured read-only checks completed. This is not a guarantee against compromise.':'Monitoring is not fully operational. Missing configuration, failed checks or delivery problems must not be interpreted as safe.'};
  fs.writeFileSync(HISTORY,JSON.stringify(state,null,2)+'\n');fs.writeFileSync(STATUS,JSON.stringify(status,null,2)+'\n');
