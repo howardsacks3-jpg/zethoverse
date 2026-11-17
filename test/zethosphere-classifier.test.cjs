@@ -10,3 +10,14 @@ test('classifies mint, authority, burn and transfer instructions',()=>{
 });
 test('preserves signature, slot and explorer evidence',()=>{const e=classifyTransaction(make('transfer'),'abc','mint');assert.equal(e.signature,'abc');assert.equal(e.slot,10);assert.match(e.evidence,/explorer.solana.com/);});
 test('uses safe generic classification for unknown instructions',()=>assert.equal(classifyTransaction(make('unknown'),'sig','mint').type,'ACCOUNT_ACTIVITY'));
+
+test('ordinary transfers are informational and large transfers escalate',()=>{
+ const ordinary=make('transfer');ordinary.transaction.message.instructions[0].parsed.info.amount='1000';
+ const large=make('transfer');large.transaction.message.instructions[0].parsed.info.amount='100000000000000';
+ assert.equal(classifyTransaction(ordinary,'small','mint').severity,'INFO');
+ assert.equal(classifyTransaction(large,'large','mint').severity,'WARNING');
+});
+test('unrelated token authority changes are not classified as ZETHO critical events',()=>{
+ const tx=make('setAuthority');tx.transaction.message.instructions[0].parsed.info.account='differentMint';
+ assert.equal(classifyTransaction(tx,'other','mint').severity,'INFO');
+});
