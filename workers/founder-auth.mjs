@@ -14,6 +14,7 @@ async function sessionToken(env){
  return payload+'.'+b64u(await hmac(env.SESSION_SIGNING_SECRET,payload));
 }
 async function validSession(request,env){
+ if(!env.SESSION_SIGNING_SECRET)return false;
  const raw=(request.headers.get('Cookie')||'').split(';').map(x=>x.trim()).find(x=>x.startsWith(COOKIE+'='))?.slice(COOKIE.length+1);
  if(!raw)return false;const [payload,sig]=raw.split('.');if(!payload||!sig)return false;
  const expected=b64u(await hmac(env.SESSION_SIGNING_SECRET,payload));if(sig!==expected)return false;
