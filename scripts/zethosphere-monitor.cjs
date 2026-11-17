@@ -35,8 +35,11 @@ async function scanAddress(address,cursor,mint){
   if(sigs.length<100)break;
  }
  if(!cursor){const first=await rpc('getSignaturesForAddress',[address,{limit:1,commitment:'confirmed'}]);return {events:[],cursor:first[0]?.signature||null,baseline:true,gap:false};}
- if(!cursorFound&&found.length>=500) return {events:[],cursor:before,baseline:false,gap:true};
- const events=[];const ordered=found.reverse();
+ // Never move the cursor when the previous signature has fallen outside
+ // the bounded history window. Advancing here would silently skip activity.
+ if(!cursorFound) return {events:[],cursor,baseline:false,gap:true};
+ const newest=found[0]?.signature||cursor;
+ const events=[];const ordered=found.slice().reverse();
  for(let i=0;i<ordered.length;i+=10){
   const batch=await Promise.all(ordered.slice(i,i+10).map(async s=>{
    if(s.err)return {id:s.signature,signature:s.signature,address,severity:'INFO',type:'FAILED_TRANSACTION',message:'Transaction failed on chain',slot:s.slot,blockTime:s.blockTime||null,evidence:'https://explorer.solana.com/tx/'+s.signature};
@@ -45,8 +48,7 @@ async function scanAddress(address,cursor,mint){
   }));
   events.push(...batch);
  }
- const newest=found[0]?.signature||cursor;
- return {events,cursor:newest,baseline:false,gap:!cursorFound};
+ return {events,cursor:newest,baseline:false,gap:false};
 }
 async function main(){
  fs.mkdirSync(OUT,{recursive:true});
@@ -99,11 +101,12 @@ async function main(){
  const delivery=await deliverPending(state.events);
  const failedDelivery=delivery.some(x=>!x.sent);
  const emailConfigured=!!(process.env.RESEND_API_KEY&&process.env.ALERT_EMAIL_TO&&process.env.ALERT_EMAIL_FROM);
- checks.push({name:'Email alert delivery',status:!emailConfigured?'WAITING':failedDelivery?'ERROR':'PASS',detail:!emailConfigured?'Configure RESEND_API_KEY, ALERT_EMAIL_TO and ALERT_EMAIL_FROM':failedDelivery?'One or more alerts remain queued for retry':'No pending critical/warning alerts; provider accepted configured sends',checkedAt:now()});
+ const emailDeliveryVerified=emailConfigured&&process.env.ZETHO_EMAIL_DELIVERY_VERIFIED==='true';
+ checks.push({name:'Email alert delivery',status:!emailConfigured?'WAITING':failedDelivery?'ERROR':emailDeliveryVerified?'PASS':'WAITING',detail:!emailConfigured?'Configure RESEND_API_KEY, ALERT_EMAIL_TO and ALERT_EMAIL_FROM':failedDelivery?'One or more alerts remain queued for retry':emailDeliveryVerified?'Founder-confirmed inbox receipt recorded after the manual delivery test':'Credentials are configured; run the manual test, confirm inbox receipt, then set ZETHO_EMAIL_DELIVERY_VERIFIED=true',checkedAt:now()});
  checks.push({name:'Dedicated RPC provider',status:DEDICATED_RPC?'PASS':'WAITING',detail:DEDICATED_RPC?'Dedicated RPC configured':'Configure SOLANA_RPC_URL; public RPC is for limited testing, not production monitoring'});
- const requiredOk=rpcOk&&DEDICATED_RPC&&!!MINT&&ADDRESSES.length>0&&PROGRAMS.length>0&&emailConfigured&&checks.filter(c=>['Solana mainnet RPC','Mint account','Project address register','Program address register'].some(n=>c.name===n)||(c.name.startsWith('Address ')||c.name.startsWith('Program '))).every(c=>c.status==='PASS')&&!scanGap;
+ const requiredOk=rpcOk&&DEDICATED_RPC&&!!MINT&&ADDRESSES.length>0&&PROGRAMS.length>0&&emailDeliveryVerified&&checks.filter(c=>['Solana mainnet RPC','Mint account','Project address register','Program address register'].some(n=>c.name===n)||(c.name.startsWith('Address ')||c.name.startsWith('Program '))).every(c=>c.status==='PASS')&&!scanGap;
  const health=checks.some(c=>c.status==='ERROR')||failedDelivery?'DEGRADED':requiredOk?'OPERATIONAL':'WAITING_FOR_CONFIGURATION';
- const status={generatedAt:now(),lastSuccessfulScan:requiredOk?now():(read(STATUS,{}).lastSuccessfulScan||null),mode:'READ_ONLY',health,rpcEndpoint:RPC.includes('api-key')?'configured provider endpoint':'public Solana RPC endpoint',mintConfigured:!!MINT,addressesConfigured:ADDRESSES.length>0,programsConfigured:PROGRAMS.length>0,emailConfigured,checks,events:state.events.slice(0,100),pendingAlerts:state.events.filter(e=>e.deliveryPending&&!e.alertedAt).length,notice:health==='OPERATIONAL'?'Configured read-only checks completed. This is not a guarantee against compromise.':'Monitoring is not fully operational. Missing configuration, failed checks or delivery problems must not be interpreted as safe.'};
+ const status={generatedAt:now(),lastSuccessfulScan:requiredOk?now():(read(STATUS,{}).lastSuccessfulScan||null),mode:'READ_ONLY',health,rpcEndpoint:RPC.includes('api-key')?'configured provider endpoint':'public Solana RPC endpoint',mintConfigured:!!MINT,addressesConfigured:ADDRESSES.length>0,programsConfigured:PROGRAMS.length>0,emailConfigured,emailDeliveryVerified,checks,events:state.events.slice(0,100),pendingAlerts:state.events.filter(e=>e.deliveryPending&&!e.alertedAt).length,notice:health==='OPERATIONAL'?'Configured read-only checks completed. This is not a guarantee against compromise.':'Monitoring is not fully operational. Missing configuration, failed checks or delivery problems must not be interpreted as safe.'};
  fs.writeFileSync(HISTORY,JSON.stringify(state,null,2)+'\n');fs.writeFileSync(STATUS,JSON.stringify(status,null,2)+'\n');
  console.log(JSON.stringify({health,checks:checks.length,newEvents:incoming.length,deliveryAttempts:delivery.length,pendingAlerts:status.pendingAlerts}));
  if(health==='DEGRADED')process.exitCode=1;
