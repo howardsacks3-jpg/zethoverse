@@ -39,9 +39,9 @@ async function main(){
  fs.mkdirSync(OUT,{recursive:true});
  const old=read(HISTORY,{events:[],cursors:{}});const state=Array.isArray(old)?{events:old,cursors:{}}:old;
  const checks=[],incoming=[];let rpcOk=false;let scanGap=false;
- try{await rpc('getHealth',[]);rpcOk=true;checks.push({name:'Solana RPC health',status:'PASS',checkedAt:now()});}
- catch(e){checks.push({name:'Solana RPC health',status:'ERROR',detail:e.message,checkedAt:now()});}
- if(!MINT)checks.push({name:'Official ZETHO mint',status:'WAITING',detail:'Verified mainnet mint address is not configured'});
+ try{await rpc('getHealth',[]);const genesis=await rpc('getGenesisHash',[]);if(genesis!=='5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp')throw Error('RPC is not connected to Solana mainnet-beta');rpcOk=true;checks.push({name:'Solana mainnet RPC',status:'PASS',genesisHash:genesis,checkedAt:now()});}
+ catch(e){checks.push({name:'Solana mainnet RPC',status:'ERROR',detail:e.message,checkedAt:now()});}
+ if(MINT&&!/^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(MINT))checks.push({name:'Official ZETHO mint',status:'ERROR',detail:'Mint address format is invalid'});\n if(!MINT)checks.push({name:'Official ZETHO mint',status:'WAITING',detail:'Verified mainnet mint address is not configured'});
  else if(rpcOk){
   try{const info=await rpc('getAccountInfo',[MINT,{encoding:'jsonParsed',commitment:'confirmed'}]);const parsed=info?.value?.data?.parsed;if(!parsed||parsed.type!=='mint')throw Error('Address is not a parsed SPL mint account');const d=parsed.info;
    checks.push({name:'Mint account',status:'PASS',checkedAt:now(),decimals:d.decimals,supply:d.supply,mintAuthority:d.mintAuthority,freezeAuthority:d.freezeAuthority});
@@ -61,7 +61,7 @@ async function main(){
  const failedDelivery=delivery.some(x=>!x.sent);
  const emailConfigured=!!(process.env.RESEND_API_KEY&&process.env.ALERT_EMAIL_TO&&process.env.ALERT_EMAIL_FROM);
  checks.push({name:'Email alert delivery',status:!emailConfigured?'WAITING':failedDelivery?'ERROR':'PASS',detail:!emailConfigured?'Configure RESEND_API_KEY, ALERT_EMAIL_TO and ALERT_EMAIL_FROM':failedDelivery?'One or more alerts remain queued for retry':'No pending critical/warning alerts; provider accepted configured sends',checkedAt:now()});
- const requiredOk=rpcOk&&!!MINT&&ADDRESSES.length>0&&emailConfigured&&checks.filter(c=>['Solana RPC health','Mint account','Project address register'].some(n=>c.name===n)||c.name.startsWith('Address ')).every(c=>c.status==='PASS')&&!scanGap;
+ const requiredOk=rpcOk&&!!MINT&&ADDRESSES.length>0&&emailConfigured&&checks.filter(c=>['Solana mainnet RPC','Mint account','Project address register'].some(n=>c.name===n)||c.name.startsWith('Address ')).every(c=>c.status==='PASS')&&!scanGap;
  const health=checks.some(c=>c.status==='ERROR')||failedDelivery?'DEGRADED':requiredOk?'OPERATIONAL':'WAITING_FOR_CONFIGURATION';
  const status={generatedAt:now(),lastSuccessfulScan:requiredOk?now():(read(STATUS,{}).lastSuccessfulScan||null),mode:'READ_ONLY',health,rpcEndpoint:RPC.includes('api-key')?'configured provider endpoint':'public Solana RPC endpoint',mintConfigured:!!MINT,addressesConfigured:ADDRESSES.length>0,emailConfigured,checks,events:state.events.slice(0,100),pendingAlerts:state.events.filter(e=>e.deliveryPending&&!e.alertedAt).length,notice:health==='OPERATIONAL'?'Configured read-only checks completed. This is not a guarantee against compromise.':'Monitoring is not fully operational. Missing configuration, failed checks or delivery problems must not be interpreted as safe.'};
  fs.writeFileSync(HISTORY,JSON.stringify(state,null,2)+'\n');fs.writeFileSync(STATUS,JSON.stringify(status,null,2)+'\n');
