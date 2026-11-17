@@ -18,6 +18,6 @@ test('ordinary transfers are informational and large transfers escalate',()=>{
  assert.equal(classifyTransaction(large,'large','mint').severity,'WARNING');
 });
 test('unrelated token authority changes are not classified as ZETHO critical events',()=>{
- const tx=make('setAuthority');tx.transaction.message.instructions[0].parsed.info.account='differentMint';
+ const tx=make('setAuthority');tx.transaction.message.instructions[0].parsed.info.account='differentMint';tx.transaction.message.instructions[0].parsed.info.mint='differentMint';
  assert.equal(classifyTransaction(tx,'other','mint').severity,'INFO');
 });
