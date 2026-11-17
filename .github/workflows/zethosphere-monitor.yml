@@ -62,6 +62,7 @@ jobs:
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
           ALERT_EMAIL_TO: ${{ vars.ALERT_EMAIL_TO }}
           ALERT_EMAIL_FROM: ${{ vars.ALERT_EMAIL_FROM }}
+          ZETHO_EMAIL_DELIVERY_VERIFIED: ${{ vars.ZETHO_EMAIL_DELIVERY_VERIFIED }}
         run: node scripts/zethosphere-monitor.cjs
       - name: Publish status and event history without overwriting newer commits
         env:
