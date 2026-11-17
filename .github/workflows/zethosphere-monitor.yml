@@ -54,6 +54,7 @@ jobs:
           SOLANA_RPC_URL: ${{ secrets.SOLANA_RPC_URL }}
           ZETHO_MINT_ADDRESS: ${{ vars.ZETHO_MINT_ADDRESS }}
           ZETHO_MONITOR_ADDRESSES: ${{ vars.ZETHO_MONITOR_ADDRESSES }}
+          ZETHO_PROGRAM_ADDRESSES: ${{ vars.ZETHO_PROGRAM_ADDRESSES }}
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
           ALERT_EMAIL_TO: ${{ vars.ALERT_EMAIL_TO }}
           ALERT_EMAIL_FROM: ${{ vars.ALERT_EMAIL_FROM }}
