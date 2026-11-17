@@ -16,7 +16,7 @@ on:
 permissions:
   contents: write
 concurrency:
-  group: zethosphere-monitor
+  group: zethosphere-monitor-${{ github.ref }}
   cancel-in-progress: false
 jobs:
   test:
@@ -25,7 +25,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.ref_name }}
+          # Pin both jobs to the exact event commit. Do not silently check out
+          # a newer branch tip while testing or generating status.
+          ref: ${{ github.sha }}
       - uses: actions/setup-node@v4
         with:
           node-version: 22
@@ -45,7 +47,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.ref_name }}
+          # Generate status from the same immutable commit that passed tests.
+          ref: ${{ github.sha }}
       - uses: actions/setup-node@v4
         with:
           node-version: 22
@@ -60,9 +63,36 @@ jobs:
           ALERT_EMAIL_TO: ${{ vars.ALERT_EMAIL_TO }}
           ALERT_EMAIL_FROM: ${{ vars.ALERT_EMAIL_FROM }}
         run: node scripts/zethosphere-monitor.cjs
-      - name: Publish status and event history
+      - name: Publish status and event history without overwriting newer commits
+        env:
+          TARGET_BRANCH: ${{ github.ref_name }}
+        shell: bash
         run: |
+          set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add monitor-data/status.json monitor-data/events.json
-          git diff --cached --quiet || (git commit -m "chore: update ZETHOSPHERE monitoring data" && git push)
+          if git diff --cached --quiet; then
+            echo "Monitoring data unchanged; nothing to publish."
+            exit 0
+          fi
+          git commit -m "chore: update ZETHOSPHERE monitoring data"
+
+          # The branch may advance while the monitor is running. Rebase this
+          # generated commit onto the latest remote tip before every push.
+          # Never force-push: a conflict or exhausted retry fails safely.
+          for attempt in 1 2 3 4 5; do
+            echo "Publishing attempt ${attempt}/5 to ${TARGET_BRANCH}"
+            git fetch origin "${TARGET_BRANCH}"
+            git rebase "origin/${TARGET_BRANCH}"
+            if git push origin "HEAD:refs/heads/${TARGET_BRANCH}"; then
+              echo "Monitoring status published."
+              exit 0
+            fi
+            if [ "${attempt}" -lt 5 ]; then
+              sleep $((attempt * 2))
+            fi
+          done
+
+          echo "Unable to publish after five safe retries; no force-push was attempted." >&2
+          exit 1
