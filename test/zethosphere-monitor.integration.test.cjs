@@ -43,5 +43,6 @@ test('monitor establishes a baseline, detects new token activity and publishes h
  assert.equal(status.health,'WAITING_FOR_CONFIGURATION');
  assert.equal(status.mintConfigured,true);
  assert.equal(status.addressesConfigured,true);
+ assert.equal(status.programsConfigured,true);
  assert.equal(status.emailConfigured,false);
 });
