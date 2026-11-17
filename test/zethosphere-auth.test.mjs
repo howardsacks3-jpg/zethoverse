@@ -6,7 +6,7 @@ const enc=new TextEncoder();
 const b64u=b=>Buffer.from(b).toString('base64url');
 async function hash(password){const salt=webcrypto.getRandomValues(new Uint8Array(16));const key=await webcrypto.subtle.importKey('raw',enc.encode(password),'PBKDF2',false,['deriveBits']);const bits=await webcrypto.subtle.deriveBits({name:'PBKDF2',salt,iterations:310000,hash:'SHA-256'},key,256);return b64u(salt)+':'+b64u(bits);}
 test('password verification accepts correct password and rejects wrong password',async()=>{const stored=await hash('correct horse battery staple');assert.equal(await passwordMatches('correct horse battery staple',stored),true);assert.equal(await passwordMatches('wrong',stored),false);});
-test('login refuses to operate without server secrets',async()=>{const r=await handle(new Request('https://example.test/api/founder/login',{method:'POST',body:JSON.stringify({password:'x'})}),{});assert.equal(r.status,503);});
+test('login refuses to operate without server secrets',async()=>{const r=await handle(new Request('https://example.test/api/founder/login',{method:'POST',headers:{Origin:'https://example.test'},body:JSON.stringify({password:'x'})}),{});assert.equal(r.status,503);});
 test('unauthenticated session endpoint is false',async()=>{const r=await handle(new Request('https://example.test/api/founder/session'),{});assert.deepEqual(await r.json(),{authenticated:false});});
 test('unknown route returns 404',async()=>{const r=await handle(new Request('https://example.test/unknown'),{});assert.equal(r.status,404);});
 
@@ -22,7 +22,7 @@ test('successful login issues a secure session cookie accepted by the session en
 });
 test('login rate limit blocks repeated attempts',async()=>{
  const env={FOUNDER_PASSWORD_HASH:'bad',SESSION_SIGNING_SECRET:'secret',AUTH_LIMITS:{get:async()=> '10'}};
- const r=await handle(new Request('https://example.test/api/founder/login',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({password:'wrong'})}),env);
+ const r=await handle(new Request('https://example.test/api/founder/login',{method:'POST',headers:{'content-type':'application/json',Origin:'https://example.test'},body:JSON.stringify({password:'wrong'})}),env);
  assert.equal(r.status,429);
 });
 
@@ -37,4 +37,21 @@ test('founder monitor status endpoint requires configured source after authentic
  const cookie=login.headers.get('set-cookie').split(';')[0];
  const r=await handle(new Request('https://example.test/api/founder/monitor-status',{headers:{Cookie:cookie}}),env);
  assert.equal(r.status,503);
+});
+
+test('founder POST endpoints reject missing and cross-origin Origin headers',async()=>{
+ const missing=await handle(new Request('https://example.test/api/founder/logout',{method:'POST'}),{});
+ assert.equal(missing.status,403);
+ const cross=await handle(new Request('https://example.test/api/founder/logout',{method:'POST',headers:{Origin:'https://attacker.example'}}),{});
+ assert.equal(cross.status,403);
+});
+test('session signatures are rejected after tampering',async()=>{
+ const password='correct horse battery staple with extras';
+ const env={FOUNDER_PASSWORD_HASH:await hash(password),SESSION_SIGNING_SECRET:'a-long-independent-session-signing-secret',AUTH_LIMITS:{get:async()=>null,put:async()=>{},delete:async()=>{}}};
+ const login=await handle(new Request('https://example.test/api/founder/login',{method:'POST',headers:{'content-type':'application/json',Origin:'https://example.test'},body:JSON.stringify({password})}),env);
+ const cookie=login.headers.get('set-cookie').split(';')[0];
+ const token=cookie.slice(cookie.indexOf('=')+1);
+ const tampered=token.slice(0,-1)+(token.endsWith('A')?'B':'A');
+ const response=await handle(new Request('https://example.test/api/founder/session',{headers:{Cookie:'zetho_founder_session='+tampered}}),env);
+ assert.deepEqual(await response.json(),{authenticated:false});
 });
