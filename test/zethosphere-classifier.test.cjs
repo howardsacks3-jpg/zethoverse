@@ -21,3 +21,19 @@ test('unrelated token authority changes are not classified as ZETHO critical eve
  const tx=make('setAuthority');tx.transaction.message.instructions[0].parsed.info.account='differentMint';tx.transaction.message.instructions[0].parsed.info.mint='differentMint';
  assert.equal(classifyTransaction(tx,'other','mint').severity,'INFO');
 });
+
+test('large unrelated-token transfers do not trigger a ZETHO large-transfer alert',()=>{
+ const tx=make('transfer');
+ tx.transaction.message.instructions[0].parsed.info={mint:'otherMint',account:'otherTokenAccount',amount:'100000000000000'};
+ tx.meta.preTokenBalances=[
+  {accountIndex:1,mint:'mint',uiTokenAmount:{amount:'1000',decimals:9}},
+  {accountIndex:2,mint:'mint',uiTokenAmount:{amount:'0',decimals:9}}
+ ];
+ tx.meta.postTokenBalances=[
+  {accountIndex:1,mint:'mint',uiTokenAmount:{amount:'0',decimals:9}},
+  {accountIndex:2,mint:'mint',uiTokenAmount:{amount:'1000',decimals:9}}
+ ];
+ const event=classifyTransaction(tx,'mixed-token-transaction','mint');
+ assert.equal(event.type,'TOKEN_TRANSFER');
+ assert.equal(event.severity,'INFO');
+});
