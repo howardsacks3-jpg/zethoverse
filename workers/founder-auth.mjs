@@ -23,6 +23,8 @@ async function validSession(request,env){
 function response(data,status=200,headers={}){return new Response(JSON.stringify(data),{status,headers:{'content-type':'application/json; charset=utf-8','cache-control':'no-store','x-content-type-options':'nosniff',...headers}});}
 async function handle(request,env){
  const url=new URL(request.url);
+ const origin=request.headers.get('Origin');
+ if(request.method==='POST'&&origin&&origin!==url.origin)return response({error:'Cross-origin request rejected'},403);
  if(url.pathname==='/api/founder/login'&&request.method==='POST'){
   if(!env.FOUNDER_PASSWORD_HASH||!env.SESSION_SIGNING_SECRET||!env.AUTH_LIMITS)return response({error:'Authentication or rate limiting is not configured'},503);
   const ip=request.headers.get('CF-Connecting-IP')||'unknown';
