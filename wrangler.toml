@@ -1,0 +1,4 @@
+name = "zethosphere-founder-auth"
+main = "workers/founder-auth.mjs"
+compatibility_date = "2026-11-17"
+workers_dev = true
