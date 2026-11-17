@@ -1,7 +1,7 @@
 'use strict';
 const SWAP_PROGRAMS = new Set([
  '675kPX9MHTjS2zt1qfr1NYHuzef2y8wQvVj7V4dV8V','whirLbMiicVdio4qvUfM5KAg6Ct8VwpYzGff3uctyCc',
- 'CAMMCzo5YL8w4VFF8KVHrK22GGUQp1V5V3vV8VnV','Eo7WjKq5v3Q6Q5Q5Q5Q5Q5Q5Q5Q5Q5Q5Q5Q5Q5Q5Q5'
+
 ]);
 function instructionsOf(tx){return (tx?.transaction?.message?.instructions||[]).concat(...((tx?.meta?.innerInstructions||[]).map(x=>x.instructions||[])));}
 function classifyTransaction(tx, signature, mint){
@@ -13,10 +13,12 @@ function classifyTransaction(tx, signature, mint){
  const targetTokenMovement=(tx?.meta?.postTokenBalances||[]).some(b=>!targetMint||b.mint===targetMint) ||
    (tx?.meta?.preTokenBalances||[]).some(b=>!targetMint||b.mint===targetMint);
  let type='ACCOUNT_ACTIVITY', severity='INFO', message='Confirmed activity observed';
- const authority=types.some(t=>t==='setAuthority');
- const minting=types.some(t=>t==='mintTo'||t==='mintToChecked');
- const burning=types.some(t=>t==='burn'||t==='burnChecked');
- const swap=programIds.some(p=>SWAP_PROGRAMS.has(p)) || logs.some(l=>/Instruction: (Swap|SwapV2)/i.test(l));
+ const targetInstruction=!targetMint||parsed.some(p=>p.info?.mint===targetMint||p.info?.account===targetMint);
+ const targetEvent=targetInstruction||targetTokenMovement;
+ const authority=targetEvent&&types.some(t=>t==='setAuthority');
+ const minting=targetEvent&&types.some(t=>t==='mintTo'||t==='mintToChecked');
+ const burning=targetEvent&&types.some(t=>t==='burn'||t==='burnChecked');
+ const swap=(programIds.some(p=>SWAP_PROGRAMS.has(p)) || logs.some(l=>/Instruction: (Swap|SwapV2)/i.test(l)))&&(!targetMint||targetTokenMovement);
  const transfers=parsed.filter(p=>p.type==='transfer'||p.type==='transferChecked');
  if(authority){type='TOKEN_AUTHORITY_CHANGE';severity='CRITICAL';message='Token authority change instruction detected';}
  else if(minting){type='TOKEN_MINT';severity='CRITICAL';message='Token mint instruction detected';}
