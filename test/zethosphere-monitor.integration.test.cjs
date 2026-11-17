@@ -1,0 +1,45 @@
+'use strict';
+const test=require('node:test');
+const assert=require('node:assert/strict');
+const http=require('node:http');
+const fs=require('node:fs');
+const os=require('node:os');
+const path=require('node:path');
+const {spawnSync}=require('node:child_process');
+const ROOT=path.join(__dirname,'..');
+const GENESIS='5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d';
+test('monitor establishes a baseline, detects new token activity and publishes honest waiting status',async(t)=>{
+ let scan=0;
+ const server=http.createServer(async(req,res)=>{
+  let body='';for await(const chunk of req)body+=chunk;const q=JSON.parse(body);let result=null;
+  if(q.method==='getHealth')result='ok';
+  else if(q.method==='getGenesisHash')result=GENESIS;
+  else if(q.method==='getAccountInfo')result={value:{data:{parsed:{type:'mint',info:{decimals:9,supply:'5000000000',mintAuthority:null,freezeAuthority:null}}}}};
+  else if(q.method==='getSignaturesForAddress'){
+   scan++;
+   if(q.params[1].limit===1)result=[{signature:'oldSignature',slot:1,blockTime:1000}];
+   else result=[{signature:'newSignature',slot:2,blockTime:2000},{signature:'oldSignature',slot:1,blockTime:1000}];
+  }else if(q.method==='getTransaction')result={slot:2,blockTime:2000,transaction:{message:{instructions:[{program:'spl-token',programId:'TokenProgram',parsed:{type:'transfer',info:{mint:'11111111111111111111111111111111',amount:'1000'}}}]}},meta:{fee:5000,err:null,preTokenBalances:[],postTokenBalances:[{accountIndex:1,mint:'11111111111111111111111111111111',uiTokenAmount:{amount:'1000',decimals:9}}],innerInstructions:[],logMessages:[]}};
+  res.writeHead(200,{'content-type':'application/json'});res.end(JSON.stringify({jsonrpc:'2.0',id:q.id,result}));
+ });
+ await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
+ t.after(()=>new Promise(resolve=>server.close(resolve)));
+ const dir=fs.mkdtempSync(path.join(os.tmpdir(),'zethosphere-'));t.after(()=>fs.rmSync(dir,{recursive:true,force:true}));
+ const address='11111111111111111111111111111111';
+ const env={...process.env,SOLANA_RPC_URL:'http://127.0.0.1:'+server.address().port,ZETHO_MINT_ADDRESS:address,ZETHO_MONITOR_ADDRESSES:address};
+ const run=()=>{const r=spawnSync(process.execPath,['scripts/zethosphere-monitor.cjs'],{cwd:dir,env,encoding:'utf8'});assert.equal(r.status,0,r.stderr||r.stdout);};
+ run();
+ let state=JSON.parse(fs.readFileSync(path.join(dir,'monitor-data/events.json'),'utf8'));
+ assert.equal(state.events.length,0);
+ assert.equal(state.cursors[address],'oldSignature');
+ run();
+ state=JSON.parse(fs.readFileSync(path.join(dir,'monitor-data/events.json'),'utf8'));
+ assert.equal(state.events.length,1);
+ assert.equal(state.events[0].type,'TOKEN_TRANSFER');
+ assert.equal(state.events[0].signature,'newSignature');
+ const status=JSON.parse(fs.readFileSync(path.join(dir,'monitor-data/status.json'),'utf8'));
+ assert.equal(status.health,'WAITING_FOR_CONFIGURATION');
+ assert.equal(status.mintConfigured,true);
+ assert.equal(status.addressesConfigured,true);
+ assert.equal(status.emailConfigured,false);
+});
