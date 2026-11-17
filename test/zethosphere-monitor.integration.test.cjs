@@ -9,14 +9,14 @@ const {spawn}=require('node:child_process');
 const ROOT=path.join(__dirname,'..');
 const GENESIS='5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d';
 test('monitor establishes a baseline, detects new token activity and publishes honest waiting status',async(t)=>{
- let scan=0;
+ let scan=0;let mintSupply='5000000000';let deploymentSlot=12;
  const server=http.createServer(async(req,res)=>{
   let body='';for await(const chunk of req)body+=chunk;const q=JSON.parse(body);let result=null;
   if(q.method==='getHealth')result='ok';
   else if(q.method==='getGenesisHash')result=GENESIS;
   else if(q.method==='getAccountInfo'&&q.params[0]==='22222222222222222222222222222222')result={value:{data:{parsed:{type:'program',info:{programData:'33333333333333333333333333333333'}}}}};
-  else if(q.method==='getAccountInfo'&&q.params[0]==='33333333333333333333333333333333')result={value:{data:{parsed:{type:'programData',info:{slot:12,upgradeAuthority:null}}}}};
-  else if(q.method==='getAccountInfo')result={value:{data:{parsed:{type:'mint',info:{decimals:9,supply:'5000000000',mintAuthority:null,freezeAuthority:null}}}}};
+  else if(q.method==='getAccountInfo'&&q.params[0]==='33333333333333333333333333333333')result={value:{data:{parsed:{type:'programData',info:{slot:deploymentSlot,upgradeAuthority:null}}}}};
+  else if(q.method==='getAccountInfo')result={value:{data:{parsed:{type:'mint',info:{decimals:9,supply:mintSupply,mintAuthority:null,freezeAuthority:null}}}}};
   else if(q.method==='getSignaturesForAddress'){
    scan++;
    if(q.params[1].limit===1)result=[{signature:'oldSignature',slot:1,blockTime:1000}];
@@ -34,11 +34,13 @@ test('monitor establishes a baseline, detects new token activity and publishes h
  let state=JSON.parse(fs.readFileSync(path.join(dir,'monitor-data/events.json'),'utf8'));
  assert.equal(state.events.length,0);
  assert.equal(state.cursors[address],'oldSignature');
+ mintSupply='5000000001';deploymentSlot=13;
  await run();
  state=JSON.parse(fs.readFileSync(path.join(dir,'monitor-data/events.json'),'utf8'));
- assert.equal(state.events.length,1);
- assert.equal(state.events[0].type,'TOKEN_TRANSFER');
- assert.equal(state.events[0].signature,'newSignature');
+ assert.equal(state.events.length,3);
+ assert.ok(state.events.some(e=>e.type==='TOKEN_TRANSFER'&&e.signature==='newSignature'));
+ assert.ok(state.events.some(e=>e.type==='MINT_SUPPLY_INCREASED'&&e.severity==='CRITICAL'));
+ assert.ok(state.events.some(e=>e.type==='PROGRAM_UPGRADE_DETECTED'&&e.severity==='CRITICAL'));
  const status=JSON.parse(fs.readFileSync(path.join(dir,'monitor-data/status.json'),'utf8'));
  assert.equal(status.health,'WAITING_FOR_CONFIGURATION');
  assert.equal(status.mintConfigured,true);
