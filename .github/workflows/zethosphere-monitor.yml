@@ -79,13 +79,64 @@ jobs:
           fi
           git commit -m "chore: update ZETHOSPHERE monitoring data"
 
-          # The branch may advance while the monitor is running. Rebase this
-          # generated commit onto the latest remote tip before every push.
-          # Never force-push: a conflict or exhausted retry fails safely.
+          # The branch may advance while the monitor is running. Rebase the
+          # generated commit onto the latest tip. If both runs changed the JSON
+          # data, merge event history and retain the status/cursors from the
+          # newest generatedAt timestamp. Never force-push.
           for attempt in 1 2 3 4 5; do
             echo "Publishing attempt ${attempt}/5 to ${TARGET_BRANCH}"
             git fetch origin "${TARGET_BRANCH}"
-            git rebase "origin/${TARGET_BRANCH}"
+            if ! git rebase "origin/${TARGET_BRANCH}"; then
+              conflicted="$(git diff --name-only --diff-filter=U)"
+              unexpected="$(printf '%s\n' "${conflicted}" | grep -vE '^(monitor-data/status.json|monitor-data/events.json)$' || true)"
+              if [ -n "${unexpected}" ]; then
+                echo "Unexpected source conflict; aborting safely:" >&2
+                echo "${unexpected}" >&2
+                git rebase --abort
+                exit 1
+              fi
+
+              git show HEAD:monitor-data/status.json > /tmp/zetho-status-remote.json
+              git show REBASE_HEAD:monitor-data/status.json > /tmp/zetho-status-local.json
+              git show HEAD:monitor-data/events.json > /tmp/zetho-events-remote.json
+              git show REBASE_HEAD:monitor-data/events.json > /tmp/zetho-events-local.json
+              node <<'NODE'
+          const fs = require('node:fs');
+          const read = p => JSON.parse(fs.readFileSync(p, 'utf8'));
+          const remoteStatus = read('/tmp/zetho-status-remote.json');
+          const localStatus = read('/tmp/zetho-status-local.json');
+          const localNewer = Date.parse(localStatus.generatedAt || 0) >= Date.parse(remoteStatus.generatedAt || 0);
+          const status = localNewer ? localStatus : remoteStatus;
+          const remoteState = read('/tmp/zetho-events-remote.json');
+          const localState = read('/tmp/zetho-events-local.json');
+          const byId = new Map();
+          for (const event of [...(remoteState.events || []), ...(localState.events || [])]) {
+            const key = event.fingerprint || [event.signature || '', event.type || '', event.address || '', event.message || ''].join('|');
+            const previous = byId.get(key) || {};
+            byId.set(key, {
+              ...previous,
+              ...event,
+              alertedAt: previous.alertedAt || event.alertedAt,
+              deliveryId: previous.deliveryId || event.deliveryId,
+              acknowledged: previous.acknowledged || event.acknowledged
+            });
+          }
+          const events = [...byId.values()]
+            .sort((a, b) => String(b.firstSeenAt || '').localeCompare(String(a.firstSeenAt || '')))
+            .slice(0, 1000);
+          const state = {
+            events,
+            cursors: (localNewer ? localState : remoteState).cursors || {}
+          };
+          status.events = events.slice(0, 100);
+          status.pendingAlerts = events.filter(e => e.deliveryPending && !e.alertedAt).length;
+          fs.writeFileSync('monitor-data/status.json', JSON.stringify(status, null, 2) + '\n');
+          fs.writeFileSync('monitor-data/events.json', JSON.stringify(state, null, 2) + '\n');
+          NODE
+              git add monitor-data/status.json monitor-data/events.json
+              GIT_EDITOR=true git rebase --continue
+            fi
+
             if git push origin "HEAD:refs/heads/${TARGET_BRANCH}"; then
               echo "Monitoring status published."
               exit 0
