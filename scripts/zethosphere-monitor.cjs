@@ -2,7 +2,7 @@
 const fs=require('node:fs');const path=require('node:path');
 const {classifyTransaction}=require('./zethosphere-classifier.cjs');
 const {mergeEvents,deliverPending}=require('./zethosphere-alerts.cjs');
-const RPC=process.env.SOLANA_RPC_URL||'https://api.mainnet-beta.solana.com';
+const DEDICATED_RPC=!!process.env.SOLANA_RPC_URL;\nconst RPC=process.env.SOLANA_RPC_URL||'https://api.mainnet-beta.solana.com';
 const ADDRESSES=(process.env.ZETHO_MONITOR_ADDRESSES||'').split(',').map(x=>x.trim()).filter(Boolean);
 const MINT=(process.env.ZETHO_MINT_ADDRESS||'').trim();
 const OUT=path.join(process.cwd(),'monitor-data'),HISTORY=path.join(OUT,'events.json'),STATUS=path.join(OUT,'status.json');
@@ -39,7 +39,7 @@ async function main(){
  fs.mkdirSync(OUT,{recursive:true});
  const old=read(HISTORY,{events:[],cursors:{}});const state=Array.isArray(old)?{events:old,cursors:{}}:old;
  const checks=[],incoming=[];let rpcOk=false;let scanGap=false;
- try{await rpc('getHealth',[]);const genesis=await rpc('getGenesisHash',[]);if(genesis!=='5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp')throw Error('RPC is not connected to Solana mainnet-beta');rpcOk=true;checks.push({name:'Solana mainnet RPC',status:'PASS',genesisHash:genesis,checkedAt:now()});}
+ try{await rpc('getHealth',[]);const genesis=await rpc('getGenesisHash',[]);if(genesis!=='5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d')throw Error('RPC is not connected to Solana mainnet-beta');rpcOk=true;checks.push({name:'Solana mainnet RPC',status:'PASS',genesisHash:genesis,checkedAt:now()});}
  catch(e){checks.push({name:'Solana mainnet RPC',status:'ERROR',detail:e.message,checkedAt:now()});}
  if(MINT&&!/^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(MINT))checks.push({name:'Official ZETHO mint',status:'ERROR',detail:'Mint address format is invalid'});
  if(!MINT)checks.push({name:'Official ZETHO mint',status:'WAITING',detail:'Verified mainnet mint address is not configured'});
@@ -65,7 +65,7 @@ async function main(){
  const failedDelivery=delivery.some(x=>!x.sent);
  const emailConfigured=!!(process.env.RESEND_API_KEY&&process.env.ALERT_EMAIL_TO&&process.env.ALERT_EMAIL_FROM);
  checks.push({name:'Email alert delivery',status:!emailConfigured?'WAITING':failedDelivery?'ERROR':'PASS',detail:!emailConfigured?'Configure RESEND_API_KEY, ALERT_EMAIL_TO and ALERT_EMAIL_FROM':failedDelivery?'One or more alerts remain queued for retry':'No pending critical/warning alerts; provider accepted configured sends',checkedAt:now()});
- const requiredOk=rpcOk&&!!MINT&&ADDRESSES.length>0&&emailConfigured&&checks.filter(c=>['Solana mainnet RPC','Mint account','Project address register'].some(n=>c.name===n)||c.name.startsWith('Address ')).every(c=>c.status==='PASS')&&!scanGap;
+ checks.push({name:'Dedicated RPC provider',status:DEDICATED_RPC?'PASS':'WAITING',detail:DEDICATED_RPC?'Dedicated RPC configured':'Configure SOLANA_RPC_URL; public RPC is for limited testing, not production monitoring'});\n const requiredOk=rpcOk&&DEDICATED_RPC&&!!MINT&&ADDRESSES.length>0&&emailConfigured&&checks.filter(c=>['Solana mainnet RPC','Mint account','Project address register'].some(n=>c.name===n)||c.name.startsWith('Address ')).every(c=>c.status==='PASS')&&!scanGap;
  const health=checks.some(c=>c.status==='ERROR')||failedDelivery?'DEGRADED':requiredOk?'OPERATIONAL':'WAITING_FOR_CONFIGURATION';
  const status={generatedAt:now(),lastSuccessfulScan:requiredOk?now():(read(STATUS,{}).lastSuccessfulScan||null),mode:'READ_ONLY',health,rpcEndpoint:RPC.includes('api-key')?'configured provider endpoint':'public Solana RPC endpoint',mintConfigured:!!MINT,addressesConfigured:ADDRESSES.length>0,emailConfigured,checks,events:state.events.slice(0,100),pendingAlerts:state.events.filter(e=>e.deliveryPending&&!e.alertedAt).length,notice:health==='OPERATIONAL'?'Configured read-only checks completed. This is not a guarantee against compromise.':'Monitoring is not fully operational. Missing configuration, failed checks or delivery problems must not be interpreted as safe.'};
  fs.writeFileSync(HISTORY,JSON.stringify(state,null,2)+'\n');fs.writeFileSync(STATUS,JSON.stringify(status,null,2)+'\n');
