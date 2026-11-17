@@ -1,6 +1,16 @@
 name: ZETHOSPHERE read-only monitoring
 on:
+  push:
+    branches: [feature/zethosphere-live-monitoring]
+    paths-ignore:
+      - 'monitor-data/**'
   workflow_dispatch:
+    inputs:
+      test_email:
+        description: 'Send a real email delivery test (requires configured Resend credentials)'
+        required: false
+        type: boolean
+        default: false
   schedule:
     - cron: '*/5 * * * *'
 permissions:
@@ -9,9 +19,29 @@ concurrency:
   group: zethosphere-monitor
   cancel-in-progress: false
 jobs:
-  monitor:
+  test:
     runs-on: ubuntu-latest
-    timeout-minutes: 4
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feature/zethosphere-live-monitoring
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Run unit and safety tests
+        run: node --test test/*.test.cjs test/*.test.mjs
+      - name: Send real email delivery test
+        if: \${{ github.event_name == 'workflow_dispatch' && inputs.test_email }}
+        env:
+          RESEND_API_KEY: \${{ secrets.RESEND_API_KEY }}
+          ALERT_EMAIL_TO: \${{ vars.ALERT_EMAIL_TO }}
+          ALERT_EMAIL_FROM: \${{ vars.ALERT_EMAIL_FROM }}
+        run: node scripts/test-alert-email.cjs
+  monitor:
+    needs: test
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
         with:
@@ -21,12 +51,13 @@ jobs:
           node-version: 22
       - name: Run read-only monitor
         env:
-          SOLANA_RPC_URL: ${{ secrets.SOLANA_RPC_URL }}
-          ZETHO_MINT_ADDRESS: ${{ vars.ZETHO_MINT_ADDRESS }}
-          ZETHO_MONITOR_ADDRESSES: ${{ vars.ZETHO_MONITOR_ADDRESSES }}
+          SOLANA_RPC_URL: \${{ secrets.SOLANA_RPC_URL }}
+          ZETHO_MINT_ADDRESS: \${{ vars.ZETHO_MINT_ADDRESS }}
+          ZETHO_MONITOR_ADDRESSES: \${{ vars.ZETHO_MONITOR_ADDRESSES }}
+          RESEND_API_KEY: \${{ secrets.RESEND_API_KEY }}
+          ALERT_EMAIL_TO: \${{ vars.ALERT_EMAIL_TO }}
+          ALERT_EMAIL_FROM: \${{ vars.ALERT_EMAIL_FROM }}
         run: node scripts/zethosphere-monitor.cjs
-      - name: Run monitor tests
-        run: node --test test/zethosphere-monitor.test.cjs
       - name: Publish status and event history
         run: |
           git config user.name "github-actions[bot]"
