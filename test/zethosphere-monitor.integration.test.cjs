@@ -5,7 +5,7 @@ const http=require('node:http');
 const fs=require('node:fs');
 const os=require('node:os');
 const path=require('node:path');
-const {spawnSync}=require('node:child_process');
+const {spawn}=require('node:child_process');
 const ROOT=path.join(__dirname,'..');
 const GENESIS='5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d';
 test('monitor establishes a baseline, detects new token activity and publishes honest waiting status',async(t)=>{
@@ -29,12 +29,12 @@ test('monitor establishes a baseline, detects new token activity and publishes h
  const dir=fs.mkdtempSync(path.join(os.tmpdir(),'zethosphere-'));t.after(()=>fs.rmSync(dir,{recursive:true,force:true}));
  const address='11111111111111111111111111111111';
  const env={...process.env,SOLANA_RPC_URL:'http://127.0.0.1:'+server.address().port,ZETHO_MINT_ADDRESS:address,ZETHO_MONITOR_ADDRESSES:address,ZETHO_PROGRAM_ADDRESSES:'22222222222222222222222222222222'};
- const run=()=>{const r=spawnSync(process.execPath,[path.join(ROOT,'scripts/zethosphere-monitor.cjs')],{cwd:dir,env,encoding:'utf8'});assert.equal(r.status,0,r.stderr||r.stdout);};
- run();
+ const run=()=>new Promise((resolve,reject)=>{const child=spawn(process.execPath,[path.join(ROOT,'scripts/zethosphere-monitor.cjs')],{cwd:dir,env});let stdout='',stderr='';child.stdout.on('data',d=>stdout+=d);child.stderr.on('data',d=>stderr+=d);child.on('error',reject);child.on('close',code=>code===0?resolve(stdout):reject(new Error(stderr||stdout||'monitor exited '+code)));});
+ await run();
  let state=JSON.parse(fs.readFileSync(path.join(dir,'monitor-data/events.json'),'utf8'));
  assert.equal(state.events.length,0);
  assert.equal(state.cursors[address],'oldSignature');
- run();
+ await run();
  state=JSON.parse(fs.readFileSync(path.join(dir,'monitor-data/events.json'),'utf8'));
  assert.equal(state.events.length,1);
  assert.equal(state.events[0].type,'TOKEN_TRANSFER');
