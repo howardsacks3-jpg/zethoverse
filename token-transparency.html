@@ -48,6 +48,7 @@ footer{text-align:center;padding:28px 18px;border-top:1px solid var(--line);colo
 <a href="roadmap.html">Roadmap</a>
 <a href="litepaper.html">Litepaper</a>
 <a href="faq.html">FAQ</a>
+<a href="risk-disclosure.html">Risk Disclosure</a>
 <a href="disclaimer.html">Legal</a>
 </nav>
 </header>
@@ -55,14 +56,14 @@ footer{text-align:center;padding:28px 18px;border-top:1px solid var(--line);colo
 <div class="eyebrow">Public token information · ZETHO</div>
 <h1>ZETHO TOKEN TRANSPARENCY &amp; VESTING</h1>
 <p>Supply, allocation, founder-release safeguards, public records and current Mainnet status — presented in one place for public inspection.</p>
-<p class="status">SELECTED PROJECT FRAMEWORK · MAINNET NOT LAUNCHED</p>
+<p class="status">MAINNET TOKEN LIVE · INITIAL RAYDIUM POOL CREATED</p>
 </div>
 <main>
-<div class="notice"><strong>Important status notice:</strong> This page records the selected ZETHO supply and allocation framework and the current state of implementation. The Solana programs have been built and tested on Devnet. The Devnet mint and program accounts are not a Mainnet token or Mainnet deployment. No Mainnet mint has been created, no Mainnet vesting vault has been deployed, no public sale is open or funded, and no liquidity pool has been created. No independent professional security audit has been commissioned. Only Mainnet on-chain records can prove that production transactions have occurred.</div>
+<div class="notice"><strong>Mainnet status notice:</strong> ZETHO has been launched on Solana Mainnet. Mint: <code>7P4vywEqhjUvA2H7asuNx2xkABuvnC6CR1UZ2GLPHQws</code>. An initial Raydium CPMM pool against wrapped SOL has been created: <code>EhoghYN3ufbKMtoqicKiVC4jW1GgHYL6zonEmk1PVrxn</code>. Pool liquidity may be very limited and may change or disappear. This page's allocation and vesting descriptions must be distinguished from actual Mainnet balances and deployed program controls. No independent professional security audit has been commissioned.</div>
 
 <section id="supply">
 <h2>1. Selected token supply and allocation</h2>
-<p>The selected project framework is a total supply of <strong>5,000,000,000 ZETHO</strong>, with <strong>9 decimal places</strong>, on Solana. This describes the intended Mainnet token design; the Mainnet mint has not been created.</p>
+<p>The selected project framework is a total supply of <strong>5,000,000,000 ZETHO</strong>, with <strong>9 decimal places</strong>, on Solana. The Mainnet mint exists at <code>7P4vywEqhjUvA2H7asuNx2xkABuvnC6CR1UZ2GLPHQws</code>; actual supply and authority status should be checked against the live mint account.</p>
 <table>
 <thead><tr><th>Allocation</th><th>Share</th><th>Quantity</th><th>Intended purpose</th></tr></thead>
 <tbody>
@@ -138,7 +139,7 @@ footer{text-align:center;padding:28px 18px;border-top:1px solid var(--line);colo
 
 <section id="launch-price">
 <h2>6. Launch price and initial liquidity</h2>
-<p><strong>The launch price has not been selected.</strong> The 5 billion token supply does not by itself determine the market price. If ZETHO launches through a decentralised liquidity pool, the initial quoted price will be determined by the ratio of ZETHO tokens to the paired asset (for example, SOL or USDC) placed into that pool.</p>
+<p><strong>ZETHO has an initial ZETHO/SOL pool on Raydium.</strong> The pool's token-to-wrapped-SOL ratio determines its quoted pool price at a given moment. That price can move sharply with trades and liquidity changes; it is not a valuation guarantee or a promise that a holder can sell at the displayed price.</p>
 <div class="formula">Initial pool price = value of paired assets ÷ number of ZETHO tokens in the pool</div>
 <p>The following are illustrations only. They are not approved prices, offers, forecasts or guarantees:</p>
 <table>
@@ -151,7 +152,7 @@ footer{text-align:center;padding:28px 18px;border-top:1px solid var(--line);colo
 <tr><td>$0.01</td><td>$50,000,000</td></tr>
 </tbody>
 </table>
-<p>The liquidity allocation of 250 million ZETHO does not mean all 250 million must enter the initial pool. The actual pool size, paired asset, ZETHO quantity, initial ratio, liquidity-provider arrangements and any lock or control arrangements must be decided and disclosed before launch.</p>
+<p>The liquidity allocation of 250 million ZETHO does not mean all 250 million must enter the initial pool. The actual pool balances and liquidity-provider arrangements should be checked against the live pool account and transaction history. Do not infer a lock, burn or permanent liquidity commitment unless the corresponding on-chain evidence proves it.</p>
 <p class="small">A pool's initial ratio is not a promise that the market will continue trading at that price. Prices can move sharply, liquidity can be limited, and buyers may lose some or all of the value they commit.</p>
 </section>
 
@@ -159,26 +160,26 @@ footer{text-align:center;padding:28px 18px;border-top:1px solid var(--line);colo
 <h2>7. What exists today — and what does not</h2>
 <table>
 <tbody>
-<tr><th>Token minted on Solana mainnet</th><td>Not yet</td></tr>
+<tr><th>Token minted on Solana mainnet</th><td>Yes — mint address published above</td></tr>
 <tr><th>Vesting program or vault deployed</th><td>Not yet</td></tr>
 <tr><th>Founder vesting transfers started</th><td>No</td></tr>
-<tr><th>Liquidity pool created or funded</th><td>Not yet</td></tr>
+<tr><th>Liquidity pool created or funded</th><td>Yes — initial Raydium CPMM pool exists; liquidity may be very limited</td></tr>
 <tr><th>Launch price selected</th><td>No</td></tr>
 <tr><th>Public sale/distribution mechanism finalised</th><td>No</td></tr>
 <tr><th>Exceptional-release criteria finalised</th><td>No</td></tr>
 </tbody>
 </table>
-<p>These items will be updated only when the relevant decisions have been made and, where applicable, implementation can be independently verified. A proposed rule on this page must not be mistaken for deployed code or a completed transaction.</p>
+<p>Descriptions of allocations and proposed controls are not proof of deployed controls. Verify mint authorities, balances, program deployments, vesting vaults, pool balances and transaction signatures directly from Mainnet records. A proposed rule must not be mistaken for deployed code or a completed transaction.</p>
 </section>
 
 <section>
 <h2>8. Verification and contact</h2>
-<p>After deployment, official mint, vault, program and transaction addresses should be published here and linked to independent blockchain explorers. Verify contract addresses through ZETHOVERSE's official website before interacting with any token or wallet. Beware of impersonators and unofficial tokens.</p>
+<p>The official Mainnet mint and identified initial pool are published above. Any additional vault, program and project-wallet addresses should be added only after verification against Mainnet records. Verify contract addresses through ZETHOVERSE's official website before interacting with any token or wallet. Beware of impersonators and unofficial tokens.</p>
 <p>For questions about the project, use the contact details published on the <a href="about.html">About page</a>.</p>
 <p class="small">This page provides project information, not financial, investment, legal or tax advice. Digital assets involve substantial risk. The applicable law and the actual implemented arrangements prevail over any summary on this page.</p>
-<p class="small">Last updated: 7 November 2026 · ZETHOVERSE · One tiny universe. Everyone connected.</p>
+<p class="small">Last updated: 19 November 2026 · ZETHOVERSE · One tiny universe. Everyone connected.</p>
 </section>
 </main>
-<footer><p style="color:#e4c477;letter-spacing:3px;font-weight:bold">ZETHOVERSE</p><p>One tiny universe. Everyone connected.</p><p><a href="index.html">Home</a> · <a href="about.html">ZETHOVERSE</a> · <a href="coin.html">The Coin · ZETHO</a> · <a href="token-transparency.html">Transparency &amp; Vesting</a> · <a href="zethosphere.html">Zethosphere</a> · <a href="roadmap.html">Roadmap</a> · <a href="litepaper.html">Litepaper</a> · <a href="faq.html">FAQ</a> · <a href="disclaimer.html">Legal</a></p><p>© 2026 ZETHOVERSE · Informational purposes only. No official coin is currently offered for sale.</p></footer>
+<footer><p style="color:#e4c477;letter-spacing:3px;font-weight:bold">ZETHOVERSE</p><p>One tiny universe. Everyone connected.</p><p><a href="index.html">Home</a> · <a href="about.html">ZETHOVERSE</a> · <a href="coin.html">The Coin · ZETHO</a> · <a href="token-transparency.html">Transparency &amp; Vesting</a> · <a href="zethosphere.html">Zethosphere</a> · <a href="roadmap.html">Roadmap</a> · <a href="litepaper.html">Litepaper</a> · <a href="faq.html">FAQ</a> · <a href="disclaimer.html">Legal</a></p><p>© 2026 ZETHOVERSE · Informational purposes only. ZETHO has launched on Solana Mainnet. See the Risk Disclosure.</p></footer>
 </body>
 </html>
